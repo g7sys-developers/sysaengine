@@ -1,0 +1,35 @@
+{
+    "name": "g7sys-developers/sysaengine",
+    "type": "library",
+    "description": "Library that connects old legacy system to new frameworks and tools",
+    "authors": [
+        {
+            "name": "G7Sys",
+            "email": "developers@g7sys.com.br",
+            "role": "Company"
+        },
+        {
+            "name": "Anderson Matheus Arruda",
+            "email": "andmarruda@gmail.com",
+            "role": "developer"
+        }
+    ],
+    "require": {
+        "php": ">=7.3",
+        "ext-curl": "*",
+        "ext-json": "*",
+        "google/cloud-storage": "*",
+        "phpmailer/phpmailer": "*",
+        "digitalocean/digitalocean": "*",
+        "doctrine/orm": "^3",
+        "doctrine/dbal": "^4",
+        "symfony/cache": "^7"
+    },
+    "autoload": {
+        "files": [
+            "/src/sysaengine.class.php"
+        ]
+    },
+    "homepage": "https://github.com/g7sys/sysaengine",
+    "license": "MIT"
+}
