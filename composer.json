@@ -20,7 +20,6 @@
         "ext-json": "*",
         "google/cloud-storage": "*",
         "phpmailer/phpmailer": "*",
-        "digitalocean/digitalocean": "*",
         "doctrine/orm": "^3",
         "doctrine/dbal": "^4",
         "symfony/cache": "^7"
