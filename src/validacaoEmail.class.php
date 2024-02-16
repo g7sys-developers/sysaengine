@@ -213,9 +213,7 @@ class validacaoEmail{
             'validade_token_br' => $dados['validade_token_br'],
             'validade_token' => $dados['validade_token'],
             'token' => $dados['validacao_token'],
-            'SYSADMCOM_RELEASE' => sysa::pegaSysPath(),
-            'SYSADMCOM_BETA' => sysa::pegaSysBetaPath(),
-            'SYSADMCOM_PATH' => (($producao) ? sysa::pegaSysPath() : sysa::pegaSysBetaPath())
+            'G7sys_PATH' => (sysa::getUrlBase())
         ];
 
         $u = new utils();

@@ -14,13 +14,8 @@
 **/
 namespace sysaengine\orm;
 
-final class postgres implements \sysaengine\metadata{
-	/**
-	 * Conexão com o PostgreSQL
-	 * @var				object
-	 */
-	private $conn;
-
+final class postgres
+{
 	/**
 	 * SQL para pegar as classes no postgresql
 	 * @var				string

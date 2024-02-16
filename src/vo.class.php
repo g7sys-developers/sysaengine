@@ -69,8 +69,6 @@ class vo{
  */
     public function __construct(string $dsn, string $schema, string $relname)
     {
-		$this->metadado = sysa::getMetaData($dsn);
-        $this->conn = $this->metadado->getConn();
 		$this->classObject = $this->metadado->getObjectInfo($schema, $relname);
 		$this->schema = $this->classObject['schema'];
 		$this->relname = $this->classObject['relname'];
