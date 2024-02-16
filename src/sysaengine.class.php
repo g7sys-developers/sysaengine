@@ -13,18 +13,7 @@
 	* @author 		Anderson Arruda < andmarruda@gmail.com >
 **/
 namespace sysaengine;
-require_once __DIR__. '/conn.class.php';
-require_once __DIR__. '/../cakephp4/vendor/autoload.php';
-
-use \Cake\Datasource\ConnectionManager AS cm;
-use \Cake\Mailer\TransportFactory;
-use Cake\Core\Configure;
-use Cake\Core\Exception\CakeException;
-use Cake\ORM\AssociationCollection;
-use Cake\ORM\BehaviorRegistry;
-use Cake\ORM\Table;
-
-Configure::write('App.namespace', '~');
+use \Exception;
 
 final class sysa{
     /**
@@ -57,18 +46,6 @@ final class sysa{
         'phpmailer',
         'sysaengine'
     ];
-
-    /**
-     * description 			Nome do banco de dados conectado pelo sistema
-     * var 					string
-     */
-	private static $dbConnected;
-
-    /**
-     * description          Nome da aplicação que está utilizando o Sysaengine
-     * var                  string
-     */
-    private static $appName;
 
     /**
      * description          Nome das classes e das localizações dos arquivos
@@ -183,68 +160,6 @@ final class sysa{
     }
 
     /**
-     * description          Retorna o nome da alias através do nome do banco de dados
-     * access               public
-     * version              1.0.0
-     * author               Anderson Arruda < andmarruda@gmail.com >
-     * param                string $dbname
-     * return               string
-     */
-    public static function dbNameToAlias(string $dbname) : string
-    {
-        $i = array_search($dbname, self::$alias);
-        return ($i === false) ? '' : $i;
-    }
-
-    /**
-     * description          Pega o nome do banco de dados conectado
-     * access               public
-     * author               Anderson Arruda < andmarruda@gmail.com >
-     * param                
-     * return               string
-     */
-    public static function getDBName() : ?string
-    {
-        return self::$dbConnected;
-    }
-
-    /**
-     * description          Pega o nome da aplicação utilizando o sysaengine
-     * access               public
-     * author               Anderson Arruda < andmarruda@gmail.com >
-     * param                
-     * return               string
-     */
-    public static function getAppName() : ?string
-    {
-        return self::$appName;
-    }
-
-    /**
-     * description          Seta o nome do banco de dados conectado
-     * access               public
-     * author               Anderson Arruda < andmarruda@gmail.com >
-     * param                string $dbName
-     * return               void
-     */
-    public static function setDBName(?string $dbname) : void
-    {
-        self::$dbConnected = $dbname ?? 'ribeiraogg';
-    }
-
-    /**
-     * description          Seta o nome da aplicação utilizando o sysaengine
-     * access               public
-     * author               Anderson Arruda < andmarruda@gmail.com >
-     * param                string $appName
-     * return               void
-     */
-    public static function setAppName(string $appname) : void
-    {
-        self::$appName = $appname;
-    }
-
-    /**
      * description          Pega o path para a class
      * access               public
      * author               Anderson Arruda < andmarruda@gmail.com >
@@ -285,7 +200,7 @@ final class sysa{
      */
     public static function pegaSysPath() : string
     {
-        return self::URL_SYSADMCOM. self::pegaVersaoAtual(1);
+        return self::URL_SYSADMCOM;
     }
 
      /**
@@ -298,152 +213,7 @@ final class sysa{
      */
     public static function pegaSysBetaPath() : string
     {
-        return self::URL_SYSADMCOM. self::pegaVersaoBeta(1);
-    }
-
-    /**
-     * description          Pega a versão release do sistema escolhido
-     * access               public
-     * version              1.0.0
-     * author               Anderson Arruda < andmarruda@gmail.com >
-     * param                int $id_system
-     * return               string
-     */
-    public static function pegaVersaoAtual(int $id_system) : string
-    {
-        $sql = 'SELECT * FROM development.sysadmcom_versao WHERE id_system=? AND status_atualizacao';
-        $conn = self::cakeConn();
-        $stmt = $conn->execute($sql, [$id_system]);
-        if($stmt->rowCount() == 0)
-            return '';
-
-        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
-        return $row['versao'];
-    }
-
-    /**
-     * description          Pega a versão beta do sistema escolhido
-     * access               public
-     * version              1.0.0
-     * author               Anderson Arruda < andmarruda@gmail.com >
-     * param                int $id_system
-     * return               string
-     */
-    public static function pegaVersaoBeta(int $id_system) : string
-    {
-        $sql = 'SELECT * FROM development.sysadmcom_versao WHERE id_system=? AND status_beta_version ORDER BY id_sysadmcom_versao DESC LIMIT 1';
-        $conn = self::cakeConn();
-        $stmt = $conn->execute($sql, [$id_system]);
-        if($stmt->rowCount() == 0)
-            return '';
-
-        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
-        return $row['versao'];
-    }
-
-    /**
-     * description          Pega sistema de ajuda para acesso de metadados do banco de dados
-     * access               public
-     * author               Anderson Arruda < andmarruda@gmail.com >
-     * param                string $dbname
-     * @return              ?\sysaengine\metadata
-     */
-    public static function getMetaData(string $dbname) : ?\sysaengine\metadata
-    {
-        $dsn = conn::cakePhpDSN($dbname);
-        preg_match('/^.*(?=:\/\/)/', $dsn, $match);
-        return new self::$metadataClass[$match[0]]($dbname);
-    }
-
-    /**
-     * description          Gera a conexão com o CakePHP - estilo custom query
-     * access               public
-     * author               Anderson Arruda < andmarruda@gmail.com >
-     * param                ?string $dbname
-     * param                bool $logging
-     * return               \Cake\Datasource\ConnectionInterface
-     */
-    public static function cakeConn(?string $dbname=NULL, bool $logging=false) : \Cake\Datasource\ConnectionInterface
-    {
-        $dbname = is_null($dbname) ? self::getDBName() : $dbname;
-        if(is_null($dbname))
-            throw new \Exception('Não é possível conectar em um banco de dados sem setar o nome do mesmo! Verifique a utilização do nome do banco de dados e tente novamente mais tarde!');
-
-        if(is_null(cm::getConfig($dbname)))
-            cm::setConfig($dbname, ['url' => conn::cakePhpDSN($dbname)]);
-
-        $conn = cm::get($dbname);
-
-        return $conn;
-    }
-
-    /**
-     * description          Cria uma classe anônima que retorna uma Table do cakephp
-     * access               public
-     * author               Anderson Arruda < andmarruda@gmail.com >
-     * param                string $table
-     * return               object
-     */
-    public static function table(string $table, ?string  $dbname=NULL) : object
-    {
-        return new class($table, self::cakeConn($dbname)) extends Table {
-            public function __construct(string $tableName, \Cake\Database\Connection $conn)
-            {
-                $this->_table=$tableName;
-                $this->_connection = $conn;
-                $this->_alias = 'ribeiraogg';
-                $this->_behaviors = new BehaviorRegistry();
-                $this->_behaviors->setTable($this);
-                $this->_associations = new AssociationCollection();
-            }
-        };
-    }
-
-    /**
-     * description          Retorna a classe parser correspondente ao método de entrada
-     * access               public
-     * author               Anderson Arruda < andmarruda@gmail.com >
-     * param                object $obj
-     * return               object | false
-     */
-    public static function parser(object $obj)
-    {
-        if($obj instanceof \Cake\Database\Statement\PDOStatement)
-            return new parser($obj);
-
-        if($obj instanceof \Cake\ORM\Query)
-            return new parserORM($obj);
-
-        return false;
-    }
-
-    /**
-     * description          Generates configuration for mailer
-     * access               public
-     * author               Anderson Arruda < andmarruda@gmail.com >
-     * param                string $email
-     * param                string $className
-     * return
-     */
-    public static function configEmail(string $email, string $className='Smtp') : string
-    {
-        $conn = self::cakeConn('ribeiraogg');
-        $sql = 'SELECT * FROM development.cadastro_email WHERE username=? LIMIT 1';
-        $stmt = $conn->execute($sql, [$email]);
-        if($stmt->rowCount() == 0)
-            throw new \Exception('Email não encontrado!');
-
-        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
-        TransportFactory::setConfig($email, [
-            'host' => ($row['smtp_secure']=='ssl') ? $row['smtp_secure']. '://'. $row['host'] : $row['host'],
-            'port' => $row['port'],
-            'username' => $row['username'],
-            'password' => $row['password_email'],
-            'className' => $className,
-            'tls' => $row['smtp_secure']=='tls' ? true : NULL
-        ]);
-
-        return $email;
+        return self::URL_SYSADMCOM;
     }
 }
 
