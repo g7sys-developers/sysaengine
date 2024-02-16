@@ -17,22 +17,17 @@ use \Exception;
 
 final class sysa{
     /**
-     * description          URL base para o Sysaengine
-     * var                  string
+     * Class data configuration
+     * @var                 array
      */
-    private static $urlBase = 'https://sysadmcom.com.br/sysadmcom/apis/sysaengine/';
-
-    /**
-     * description          URL base para o Sysadmcom
-     * var                  string
-     */
-    const URL_SYSADMCOM = 'https://sysadmcom.com.br/sysadmcom/versoes/';
-
-    /**
-     * description          Caminho local para a pasta de apis disponíveis
-     * var                  string
-     */
-    private static $apiPath = '/var/www/html/sysadmcom/apis/';
+    private static $config = [
+        'url'       => NULL,
+        'dbname'    => NULL,
+        'port'      => NULL,
+        'host'      => NULL,
+        'user'      => NULL,
+        'pass'      => NULL
+    ];
 
     /**
      * description          Nome das classes e das localizações dos arquivos
@@ -85,7 +80,7 @@ final class sysa{
      */
     public static function getUrlBase() : string
     {
-        return self::$urlBase;
+        return self::$config['url'];
     }
 
     /**
@@ -98,7 +93,7 @@ final class sysa{
      */
     public static function getSheetJS() : string
     {
-        return '<script type="text/javascript" src="'.self::$urlBase.'/js/SheetJS/xlsx.full.min.js"></script>';
+        return '<script type="text/javascript" src="'.self::$config['url'].'/js/SheetJS/xlsx.full.min.js"></script>';
     }
 
     /**
