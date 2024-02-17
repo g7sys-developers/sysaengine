@@ -17,18 +17,6 @@ use sysaengine\sql_helper\postgres;
 
 class vo extends postgres{
 	/**
-	 * Valores das colunas da tabela carregada
-	 * @var             ['colname' => ['type' => string, 'notnull' => boolean, 'typcategory' => string, 'default' => string, 'setted_in_save' => boolean, 'value' => mixed]]
-	 */
-    protected $cols = [];
-
-	/**
-	 * Informação retornada sobre o schema e a class
-	 * @var				array
-	 */
-	private $classObject = [];
-
-	/**
 	 * description      Acessa a conexão e pega as informações relevantes para o uso do VO
 	 * name             __construct
 	 * access           public
@@ -39,11 +27,11 @@ class vo extends postgres{
 	 * return           void
 	 */
     public function __construct(
-		protected string $schema,
-		protected string $relname
+		string $schema,
+		string $relname
 	)
     {
-		parent::__construct();
+		parent::__construct($schema, $relname);
     }
 
 	/**
