@@ -53,33 +53,6 @@ final class conn{
      * @var boolean
      */
     private static $debugMode = false;
-	
-    /**
-     * Sets amaengine in sysaengien
-     * name             setAmaengine
-     * access           public
-     * author           Anderson Arruda < anderson@sysborg.com.br >]
-     * @param           object $amaengine
-     * @return          void
-     */
-    public static function setAmaengine(string $amaengine) {
-        require_once($amaengine);
-    }
-
-    /**
-     * Return database informations
-     * @return array
-     */
-    public static function databaseInfo()
-    {
-        return [
-            \amaengine::env('DB_HOST'),
-            \amaengine::env('DB_PORT'),
-            \amaengine::env('DB_NAME'),
-            \amaengine::env('DB_USER'),
-            \amaengine::env('DB_PASS')
-        ];
-    }
 
     /**
      * description      Gera o DSN Data Source Name para a conexão
@@ -95,23 +68,8 @@ final class conn{
         if(isset($_SESSION['sysadmcom']) && isset($_SESSION['sysadmcom']['nomusu']))
             $appname .= '_'.substr($_SESSION['sysadmcom']['nomusu'], 0, 45);
 
-        list($host, $port, $name, $user, $pass) = self::databaseInfo();
-
+        list($host, $port, $name, $user, $pass) = sysa::getDbData();
         return "pgsql:host=$host port=$port dbname=$name application_name=$appname";
-    }
-
-    /**
-     * description      Retorna o DSN compatível com o CAKEPHP
-     * name             cakePhpDSN
-     * access           public
-     * author           Anderson Arruda < andmarruda@gmail.com >
-     * param            string $dbname
-     * return           string
-     */
-    public static function cakePhpDSN() : string
-    {
-        list($host, $port, $name, $user, $pass) = self::databaseInfo();
-        return "postgres://$user:$pass@$host:$port/$name";
     }
 
     /**
@@ -180,10 +138,10 @@ final class conn{
     public static function get_conn(?array $attrs=NULL) : PDO
     {
         try {
-            list($host, $port, $name, $user, $pass) = self::databaseInfo();
+            list($host, $port, $name, $user, $pass) = sysa::getDbData();
             if(!isset(self::$pdo)){
                 $attrs = isset($attrs) ? array_merge(self::$attrs, $attrs) : self::$attrs;
-                self::$pdo = new PDO(self::dsn($dbname), $user, $pass, $attrs);
+                self::$pdo = new PDO(self::dsn(), $user, $pass, $attrs);
 
                 if(self::$debugMode) self::$pdo->setAttribute(PDO::ATTR_EMULATE_PREPARES, true);
             }
@@ -207,18 +165,10 @@ final class conn{
      */
     public static function conn_infos() : array
     {
-        $in_transaction = array_filter(self::$in_transaction, function($val){
-            return $val;
-        });
-
-        $last_errors = [];
-        foreach(self::$pdos as $db => $pdo)
-            $last_errors[$db] = $pdo->errorInfo();
-
         return [
-            'banco_dados_conectados' => array_keys(self::$pdos),
-            'banco_dados_transaction_ativa' => array_keys($in_transaction),
-            'banco_dados_erros' => $last_errors
+            'conectado' => isset(self::$pdo),
+            'transaction_ativa' => self::$in_transaction,
+            'erro' => self::$pdo->errorInfo()
         ];
     }
 

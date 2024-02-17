@@ -17,34 +17,16 @@ use \Exception;
 
 final class sysa{
     /**
-     * description          URL base para o Sysaengine
-     * var                  string
+     * Class data configuration
+     * @var                 array
      */
-    private static $urlBase = 'https://sysadmcom.com.br/sysadmcom/apis/sysaengine/';
-
-    /**
-     * description          URL base para o Sysadmcom
-     * var                  string
-     */
-    const URL_SYSADMCOM = 'https://sysadmcom.com.br/sysadmcom/versoes/';
-
-    /**
-     * description          Caminho local para a pasta de apis disponíveis
-     * var                  string
-     */
-    private static $apiPath = '/var/www/html/sysadmcom/apis/';
-
-    /**
-     * description          apis proibidas de serem invocadas
-     * var                  array
-     */
-    private static $deniedAPIs = [
-        'amaengine2',
-        'cakephp4',
-        'googleapi',
-        'novo_cakephp4',
-        'phpmailer',
-        'sysaengine'
+    private static $config = [
+        'url'       => NULL,
+        'dbname'    => NULL,
+        'port'      => NULL,
+        'host'      => NULL,
+        'user'      => NULL,
+        'pass'      => NULL
     ];
 
     /**
@@ -56,7 +38,6 @@ final class sysa{
         'sysaengine\filecontrol'                        => __DIR__.'/filecontrol.class.php',
         'sysaengine\gcloud'                             => __DIR__.'/gcloud.class.php',
         'sysaengine\parser'                             => __DIR__.'/parser.class.php',
-        'sysaengine\parserORM'                          => __DIR__.'/parserORM.class.php',
         'sysaengine\autentiquev2\common'                => __DIR__.'/autentique/common.class.php',
         'sysaengine\history'                            => __DIR__.'/history.class.php',
         'sysaengine\upload'                             => __DIR__.'/upload.class.php',
@@ -67,10 +48,7 @@ final class sysa{
         'sysborg\strUtil'                               => __DIR__.'/../PHPUsefulFunctions/strUtil.class.php',
         'sysaengine\vo'                                 => __DIR__.'/vo.class.php',
         'sysaengine\dao'                                => __DIR__.'/dao.class.php',
-        'sysaengine\orm\postgres'                       => __DIR__.'/orm/postgres.class.php',
-        'sysaengine\metadata'                           => __DIR__.'/metadata.interface.php',
-        'sysaengine\orm\sqlAttributes'                  => __DIR__.'/orm/sqlAttributes.class.php',
-        'sysaengine\mongodb'                            => __DIR__.'/mongodb.class.php'
+        'sysaengine\sql_helper\postgres'                => __DIR__.'/sql_helper/postgres.php'
     ];
 
     /**
@@ -93,34 +71,6 @@ final class sysa{
     ];
 
     /**
-     * description          Classe de metadados para DAO/VO dinâmico e qualquer outra classe que precisar
-     * var                  array
-     */
-    private static $metadataClass = [
-        'postgres' => \sysaengine\orm\postgres::class, //postgresql
-        'mysql'    => '', //mysql  "precisa ser desenvolvido caso precise"
-        'dblib'    => '', //mssql  "precisa ser desenvolvido caso precise"
-        'oci'      => '', //oracle "precisa ser desenvolvido caso precise"
-    ];
-
-    /**
-     * description          Chama apis externas pré instaladas
-     * access               public
-     * version              1.0.0
-     * author               Anderson Arruda < andmarruda@gmail.com >
-     * param                string apiName
-     * return               void
-     */
-    public static function invocaApi(string $apiName) : void
-    {
-        $path = self::$apiPath. '/'. $apiName;
-        if(in_array($apiName, self::$deniedAPIs) || !is_dir($path))
-            return;
-
-        require $path. '/vendor/autoload.php';
-    }
-
-    /**
      * description          Retorna a url base
      * access               public
      * version              1.0.0
@@ -130,7 +80,7 @@ final class sysa{
      */
     public static function getUrlBase() : string
     {
-        return self::$urlBase;
+        return self::$config['url'];
     }
 
     /**
@@ -143,7 +93,7 @@ final class sysa{
      */
     public static function getSheetJS() : string
     {
-        return '<script type="text/javascript" src="'.self::$urlBase.'/js/SheetJS/xlsx.full.min.js"></script>';
+        return '<script type="text/javascript" src="'.self::$config['url'].'/js/SheetJS/xlsx.full.min.js"></script>';
     }
 
     /**
@@ -191,29 +141,37 @@ final class sysa{
     }
 
     /**
-     * description          Pega o caminho para a versão release
-     * access               public
-     * version              1.0.0
-     * author               Anderson Arruda < andmarruda@gmail.com >
-     * param                
-     * return               string
+     * Generated static call to set values a single time
+     * 
+     * @param string $name
+     * @param array $arguments
+     * @return void
      */
-    public static function pegaSysPath() : string
+    public function __callStatic(string $name, array $arguments)
     {
-        return self::URL_SYSADMCOM;
+        if(!isset(self::$config[$name]))
+            throw new Exception("Configuration $name not founded");
+
+        if(!is_null(self::$config[$name]))
+            return;
+
+        self::$config[$name] = $arguments[0];
     }
 
-     /**
-     * description          Pega o caminho para a versão beta
-     * access               public
-     * version              1.0.0
-     * author               Anderson Arruda < andmarruda@gmail.com >
-     * param                int $id_system
-     * return               string
+    /**
+     * Get dbdata 
+     * 
+     * @return array
      */
-    public static function pegaSysBetaPath() : string
+    public static function getDbData() : array
     {
-        return self::URL_SYSADMCOM;
+        return [
+            self::$config['host'],
+            self::$config['port'],
+            self::$config['name'],
+            self::$config['user'],
+            self::$config['pass']
+        ];
     }
 }
 
