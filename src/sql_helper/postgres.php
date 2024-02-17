@@ -107,7 +107,7 @@ abstract class postgres
 	 * SQL para verificar se uma index existe
 	 * @var				string
 	 */
-	private $sqlTableIndex = '
+	private $sqlTableIndex = "
 		SELECT
 			n.nspname AS schema_name,
 			i.indexrelid::regclass AS index_name,
@@ -121,8 +121,7 @@ abstract class postgres
 		GROUP BY
 			n.nspname, i.indexrelid
 		ORDER BY
-			index_name
-	';
+			index_name";
 
 	/**
 	 * Object with database connection
@@ -146,7 +145,7 @@ abstract class postgres
 	 * Informação retornada sobre o schema e a class
 	 * @var				array
 	 */
-	private $classObject = [];
+	private $objectConstraints = [];
 
 	/**
 	 * description 		Implementa a classe com dados para a criação de conexões e etc...
@@ -185,7 +184,7 @@ abstract class postgres
 		$stmt->execute([$this->schema, $this->relname]);
 		if($stmt->rowCount() > 0)
 		{
-			$this->dbOjectInfo = $stmt->fetch(PDO::FETCH_ASSOC);
+			$this->dbObjectInfo = $stmt->fetch(PDO::FETCH_ASSOC);
 			return true;
 		}
 
@@ -202,7 +201,7 @@ abstract class postgres
 	 */
 	protected function getColumns() : void
 	{
-		$stmt = $this->conn->prepare($$this->attrSql[$this->dbObjectInfo['type']]);
+		$stmt = $this->conn->prepare($this->attrSql[$this->dbObjectInfo['type']]);
 		$stmt->execute([$this->schema, $this->relname]);
 		if($stmt->rowCount() > 0)
 		{
