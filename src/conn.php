@@ -18,6 +18,8 @@
 namespace sysaengine;
 use \PDO;
 use \Exception;
+use Doctrine\DBAL\DriverManager;
+use Doctrine\DBAL\Connection;
 
 if(session_status()!=PHP_SESSION_ACTIVE)
 	session_start();
@@ -53,6 +55,12 @@ final class conn{
      * @var boolean
      */
     private static $debugMode = false;
+
+    /**
+     * DriverManager Connection of Doctrine
+     * @var Connection
+     */
+    private static Connection $driverManager;
 
     /**
      * description      Gera o DSN Data Source Name para a conexão
@@ -215,6 +223,33 @@ final class conn{
     public function __debugInfo()
     {
         return self::conn_infos();
+    }
+
+    /**
+     * description      Get query builder from Doctrine DBAL
+     * @name            DB
+     * @access          public
+     * @version         1.0.0
+     * @author          Anderson Arruda < andmarruda@gmail.com >
+     * @param           
+     * @return          object
+     */
+    public static function DB() : object
+    {
+        if(!isset(self::$driverManager))
+        {
+            list($host, $port, $name, $user, $pass) = sysa::getDbData();
+            self::$driverManager = DriverManager::getConnection([
+                'dbname'    => $name,
+                'user'      => $user,
+                'password'  => $pass,
+                'host'      => $host,
+                'port'      => $port,
+                'driver'    => 'pdo_pgsql'
+            ]);
+        }
+
+        return self::$driverManager->createQueryBuilder();
     }
 }
 ?>
