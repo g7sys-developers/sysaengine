@@ -48,7 +48,7 @@ final class sysa{
         'sysborg\strUtil'                               => __DIR__.'/../PHPUsefulFunctions/strUtil.class.php',
         'sysaengine\vo'                                 => __DIR__.'/vo.class.php',
         'sysaengine\dao'                                => __DIR__.'/dao.class.php',
-        'sysaengine\orm\postgres'                       => __DIR__.'/orm/postgres.class.php'
+        'sysaengine\sql_helper\postgres'                => __DIR__.'/sql_helper/postgres.php'
     ];
 
     /**
@@ -138,6 +138,40 @@ final class sysa{
         header('Content-type: application/json');
         echo json_encode($output);
         die;
+    }
+
+    /**
+     * Generated static call to set values a single time
+     * 
+     * @param string $name
+     * @param array $arguments
+     * @return void
+     */
+    public function __callStatic(string $name, array $arguments)
+    {
+        if(!isset(self::$config[$name]))
+            throw new Exception("Configuration $name not founded");
+
+        if(!is_null(self::$config[$name]))
+            return;
+
+        self::$config[$name] = $arguments[0];
+    }
+
+    /**
+     * Get dbdata 
+     * 
+     * @return array
+     */
+    public static function getDbData() : array
+    {
+        return [
+            self::$config['host'],
+            self::$config['port'],
+            self::$config['name'],
+            self::$config['user'],
+            self::$config['pass']
+        ];
     }
 }
 

@@ -12,7 +12,10 @@
 	* @copyright 	2021-2030
 	* @author 		Anderson Arruda < andmarruda@gmail.com >
 **/
-namespace sysaengine\orm;
+namespace sysaengine\sql_helper;
+
+use sysaengine\sysa;
+use sysaengine\conn;
 
 final class postgres
 {
@@ -120,11 +123,6 @@ final class postgres
 	';
 
 	/**
-	 * SQL que retorna todas as colunas da index "falta converter o pi.indkey acima para uma array utilizavem no aty do pg_attribute - ver engine.class.php do amaengine"
-	 * @var				string
-	 */
-
-	/**
 	 * Retém os valores pesquisados da informação dos objetos
 	 * @var				array
 	 */
@@ -135,12 +133,12 @@ final class postgres
 	 * name				__construct
 	 * access			public
 	 * author			Anderson Arruda < andmarruda@gmail.com >
-	 * param			string $dbname
+	 * param			
 	 * return			void
 	 */
-	public function __construct(string $dbname)
+	public function __construct()
 	{
-		$this->conn = \sysaengine\sysa::cakeConn($dbname);
+		$this->conn = conn::get_conn();
 	}
 
 	/**
@@ -163,16 +161,13 @@ final class postgres
 	 * author			Anderson Arruda < andmarruda@gmail.com >
 	 * param			string $relname
 	 * param			string $schema=NULL
-	 * return			array
+	 * return			object
 	 */
-	public function getObjectInfo(string $relname, ?string $schema=NULL) : array
+	public function getObjectInfo(string $relname, ?string $schema=NULL) : object
 	{
-		$stmt = \sysaengine\sysa::parser($this->conn->execute($this->classObject. ' SELECT * FROM pg_object_class WHERE (schema, class)=(?, ?)', [$schema, $relname]))->rowsToArray();
-		if(array_key_exists('none', $stmt[0]))
-			throw new \Exception('O objeto do banco de dados não foi encontrado. Schema '. $schema. ' Objeto: '. $relname);
-
-		$this->classDbInfo = ['schema' => $stmt[0]['schema'], 'relname' => $stmt[0]['class'], 'type' => $stmt[0]['type']];
-		return $this->classDbInfo;
+		$stmt = $this->conn->prepare($this->classObject. ' SELECT * FROM pg_object_class WHERE (schema, class) = (?, ?)');
+		$stmt->execute([$schema, $relname]);
+		return $stmt->fetch(PDO::FETCH_ASSOC);
 	}
 
 	/**
@@ -200,6 +195,20 @@ final class postgres
 	public function hasIndex(string $indexName) : bool
 	{
 		
+	}
+
+	/**
+	 * description 		Verify if object exists in database and returns his relkind
+	 * name				objectInfo
+	 * access			public
+	 * author 			Anderson Arruda < anderson@sysborg.com.br >
+	 * param			string $schema
+	 * param			string $relname
+	 * return			null | string
+	 */
+	public function objectInfo(string $schema, string $relname) : ?string
+	{
+
 	}
 }
 ?>
