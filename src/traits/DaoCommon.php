@@ -21,7 +21,7 @@
         {
             if($this->useIndex)
             {
-                $columns $this->getIndex($where);
+                $columns = $this->getIndex($where);
                 if(count($columns) == 0)
                     throw new \Exception("Index $where doesn't exists for this database object");
 
@@ -45,7 +45,7 @@
             if($where != '')
             {
                 $preparedWhere = $this->prepareWhere($where);
-                $sql .= " WHERE $preparedWhere['where']";
+                $sql .= " WHERE ". $preparedWhere['where'];
             }
 
             if($groupBy != '')
@@ -55,7 +55,15 @@
                 $sql .= " ORDER BY $orderBy" ;
 
             $stmt = $this->conn->prepare($sql);
-            $stmt->execute($preparedWhere['binds']); //need to whereInterpreter return all values coorect to avoid binparam class
+            $stmt->execute($preparedWhere['binds']);
+            $results = [0 => ['none' => 'Nenhum resultado encontrado!']];
+
+            if($stmt->rowCount() > 0)
+            {
+                $results = [];
+                while($result=$stmt->fetch(PDO::FETCH_ASSOC))
+                    $results[] = $result;
+            }
             
             $this->useIndex = true;
             return $results;

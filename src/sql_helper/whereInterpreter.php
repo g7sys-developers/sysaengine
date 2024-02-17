@@ -150,7 +150,7 @@ final class whereInterpreter{
 		$regex_common_operator = '/'. implode('|', self::$common_operators). '/i';
 		$regex_not_binded = '/'. implode('|', self::$not_binded). '/';
 		$regex_special_operator = '/'. implode('|', self::$special_operators). '/i';
-		$temp_column = [];
+		$binds = [];
 
 		for($x=0; $x<$max; $x++){
 			$y=$x+1;
@@ -159,12 +159,13 @@ final class whereInterpreter{
 				$bind_number = substr_count($info, '?');
 				$like = (preg_match($regex_special_operator, $info));
 				for($z=0; $z<$bind_number; $z++){
-					$temp_column[] = ['field' => $finded_columns[$x][0], 'like' => (bool) $like];
+					$value = is_array($colunas[$finded_columns[$x][0]]['value']) ? $colunas[$finded_columns[$x][0]]['value'][$z] : $colunas[$finded_columns[$x][0]]['value'];
+					$binds[] = $like ? '%'. $value. '%' : $value;
 				}
 			}
 		}
 
-		return ['where' => $where, 'fields' => $temp_column];
+		return ['where' => $where, 'binds' => $binds];
 	}
 
 	/**
