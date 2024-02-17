@@ -48,7 +48,8 @@ final class sysa{
         'sysborg\strUtil'                               => __DIR__.'/../PHPUsefulFunctions/strUtil.class.php',
         'sysaengine\vo'                                 => __DIR__.'/vo.class.php',
         'sysaengine\dao'                                => __DIR__.'/dao.class.php',
-        'sysaengine\sql_helper\postgres'                => __DIR__.'/sql_helper/postgres.php'
+        'sysaengine\sql_helper\postgres'                => __DIR__.'/sql_helper/postgres.php',
+        'sysaengine\conn'                               => __DIR__.'/conn.php'
     ];
 
     /**
@@ -147,9 +148,9 @@ final class sysa{
      * @param array $arguments
      * @return void
      */
-    public function __callStatic(string $name, array $arguments)
+    public static function __callStatic(string $name, array $arguments)
     {
-        if(!isset(self::$config[$name]))
+        if(!array_key_exists($name, self::$config))
             throw new Exception("Configuration $name not founded");
 
         if(!is_null(self::$config[$name]))
@@ -168,7 +169,7 @@ final class sysa{
         return [
             self::$config['host'],
             self::$config['port'],
-            self::$config['name'],
+            self::$config['dbname'],
             self::$config['user'],
             self::$config['pass']
         ];

@@ -13,8 +13,9 @@
 	* @author 		Anderson Arruda < andmarruda@gmail.com >
 **/
 namespace sysaengine;
+use sysaengine\sql_helper\postgres;
 
-class vo{
+class vo extends postgres{
 	/**
 	 * Valores das colunas da tabela carregada
 	 * @var             ['colname' => ['type' => string, 'notnull' => boolean, 'typcategory' => string, 'default' => string, 'setted_in_save' => boolean, 'value' => mixed]]
@@ -38,11 +39,11 @@ class vo{
 	 * return           void
 	 */
     public function __construct(
-		private string $schema,
-		private string $relname
+		protected string $schema,
+		protected string $relname
 	)
     {
-		
+		parent::__construct();
     }
 
 	/**
