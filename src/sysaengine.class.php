@@ -46,10 +46,13 @@ final class sysa{
         'sysaengine\utils'                              => __DIR__.'/utils.class.php',
         'sysaengine\validacaoCelular'                   => __DIR__.'/validacaoCelular.class.php',
         'sysborg\strUtil'                               => __DIR__.'/../PHPUsefulFunctions/strUtil.class.php',
-        'sysaengine\vo'                                 => __DIR__.'/vo.class.php',
-        'sysaengine\dao'                                => __DIR__.'/dao.class.php',
+        'sysaengine\vo'                                 => __DIR__.'/vo.php',
+        'sysaengine\dao'                                => __DIR__.'/dao.php',
         'sysaengine\sql_helper\postgres'                => __DIR__.'/sql_helper/postgres.php',
-        'sysaengine\conn'                               => __DIR__.'/conn.php'
+        'sysaengine\conn'                               => __DIR__.'/conn.php',
+        'sysaengine\traits\DaoCommon'                   => __DIR__.'/traits/DaoCommon.php',
+        'sysaengine\traits\DaoFunction'                 => __DIR__.'/traits/DaoFunction.php',
+        'sysaengine\sql_helper\whereInterpreter'        => __DIR__.'/sql_helper/whereInterpreter.php'
     ];
 
     /**

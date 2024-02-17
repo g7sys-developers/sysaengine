@@ -107,19 +107,21 @@ abstract class postgres
 	 * SQL para verificar se uma index existe
 	 * @var				string
 	 */
-	private $sqlIndexExiste = '
+	private $sqlTableIndex = '
 		SELECT
-			pn.nspname AS index_schema, pc.relname AS index_name, pn_tab.nspname AS schemaname, pc_tab.relname AS tablename, pi.indkey
-		FROM
-			pg_index pi
-			JOIN pg_class pc ON pc.oid=pi.indexrelid
-			JOIN pg_namespace pn ON pn.oid=pc.relnamespace
-			JOIN pg_class pc_tab ON pc_tab.oid=pi.indrelid
-			JOIN pg_namespace pn_tab ON pn_tab.oid=pc_tab.relnamespace
+			n.nspname AS schema_name,
+			i.indexrelid::regclass AS index_name,
+			string_agg(a.attname, ',') AS index_columns
+		FROM pg_index i
+		JOIN pg_attribute a ON a.attrelid = i.indexrelid
+		JOIN pg_class c ON c.oid = i.indrelid
+		JOIN pg_namespace n ON n.oid = c.relnamespace
 		WHERE
-			pn_tab.nspname NOT IN(\'pg_toast\', \'pg_catalog\', \'information_schema\') AND
-			(pc.relname, pn_tab.nspname, pc_tab.relname) = (?, ?, ?)
-		;
+			c.relname = ? AND n.nspname = ? AND i.indexrelid::regclass=?
+		GROUP BY
+			n.nspname, i.indexrelid
+		ORDER BY
+			index_name
 	';
 
 	/**
@@ -132,7 +134,19 @@ abstract class postgres
 	 * Stores db object informations
 	 * @var array
 	 */
-	protected array $dbOjectInfo;
+	protected array $dbObjectInfo;
+
+	/**
+	 * Valores das colunas da tabela carregada
+	 * @var             ['colname' => ['type' => string, 'notnull' => boolean, 'typcategory' => string, 'default' => string, 'setted_in_save' => boolean, 'value' => mixed]]
+	 */
+    protected $cols = [];
+
+	/**
+	 * Informação retornada sobre o schema e a class
+	 * @var				array
+	 */
+	private $classObject = [];
 
 	/**
 	 * description 		Implementa a classe com dados para a criação de conexões e etc...
@@ -142,7 +156,10 @@ abstract class postgres
 	 * param			
 	 * return			void
 	 */
-	public function __construct()
+	public function __construct(
+		protected string $schema,
+		protected string $relname
+	)
 	{
 		$this->conn = conn::get_conn();
 		if(!$this->getObjectInfo($this->relname, $this->schema))
@@ -181,12 +198,11 @@ abstract class postgres
 	 * access			public
 	 * author			Anderson Arruda < andmarruda@gmail.com >
 	 * param			
-	 * return			array
+	 * return			void
 	 */
-	protected function getColumns() : object
+	protected function getColumns() : void
 	{
-		$sql = 'WITH object_attributes AS ('. $this->attrSql[$this->dbObjectInfo['type']]. ') SELECT * FROM object_attributes WHERE (table_schema, table_name) = (?, ?)';
-		$stmt = $this->conn->prepare();
+		$stmt = $this->conn->prepare($$this->attrSql[$this->dbObjectInfo['type']]);
 		$stmt->execute([$this->schema, $this->relname]);
 		if($stmt->rowCount() > 0)
 		{
@@ -206,16 +222,22 @@ abstract class postgres
 	}
 
 	/**
-	 * description		Verifica se existe uma index com o nome inputado
+	 * description		Get column name for existing index
 	 * name				hasIndex
 	 * access			public
 	 * author			Anderson Arruda < andmarruda@gmail.com >
 	 * param			string $indexName
-	 * return			bool
+	 * return			array
 	 */
-	public function hasIndex(string $indexName) : bool
+	public function getIndex(string $indexName) : array
 	{
-		
+		$stmt = $this->conn->prepare($this->sqlTableIndex);
+		$stmt->execute([$this->schema, $this->relname, $indexName]);
+		if($stmt->rowCount() == 0)
+			return [];
+
+		$data = $stmt->fetch(PDO::FETCH_ASSOC);
+		return explode(',', $data['index_columns']);
 	}
 
 	/**
