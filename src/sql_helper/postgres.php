@@ -14,10 +14,10 @@
 **/
 namespace sysaengine\sql_helper;
 
-use sysaengine\sysa;
 use sysaengine\conn;
+use \PDO;
 
-final class postgres
+abstract class postgres
 {
 	/**
 	 * SQL para pegar as classes no postgresql
@@ -34,7 +34,7 @@ final class postgres
 			
 		UNION
 
-		SELECT
+		SELECT 
 			r.specific_schema AS schema, r.routine_name AS class, \'FUNC\'::varchar AS type
 		FROM
 			information_schema.routines AS r
@@ -89,7 +89,7 @@ final class postgres
 						AND d.table_schema::text NOT IN(\'pg_catalog\'::text, \'information_schema\'::text) AND NOT a.attisdropped',
 
 		'FUNC'	=> 'SELECT
-						r.specific_schema, r.routine_name, p.ordinal_position, p.parameter_name AS coluna,
+						r.specific_schema AS table_schema, r.routine_name AS table_name, p.ordinal_position, p.parameter_name AS coluna,
 						p.data_type, p.udt_name, t.typname AS tipo, t.typcategory,
 						p.parameter_mode, 1 as attnotnull, \'\' as column_default
 					FROM 
@@ -123,10 +123,16 @@ final class postgres
 	';
 
 	/**
-	 * Retém os valores pesquisados da informação dos objetos
-	 * @var				array
+	 * Object with database connection
+	 * @var				object
 	 */
-	private $classDbInfo;
+	protected object $conn;
+
+	/**
+	 * Stores db object informations
+	 * @var array
+	 */
+	protected array $dbOjectInfo;
 
 	/**
 	 * description 		Implementa a classe com dados para a criação de conexões e etc...
@@ -139,19 +145,13 @@ final class postgres
 	public function __construct()
 	{
 		$this->conn = conn::get_conn();
-	}
+		if(!$this->getObjectInfo($this->relname, $this->schema))
+		{
+			list($schema, $relname) = [$this->schema, $this->relname];
+			throw new \Exception("Database object not founded: $schema.$relname");
+		}
 
-	/**
-	 * description		Pega a conexão utilizada por essa classe
-	 * name				getConn
-	 * access			public
-	 * author			Anderson Arruda < andmarruda@gmail.com >
-	 * param			
-	 * return			\Cake\Datasource\ConnectionInterface
-	 */
-	public function getConn() : \Cake\Datasource\ConnectionInterface
-	{
-		return $this->conn;
+		$this->getColumns();
 	}
 
 	/**
@@ -159,15 +159,20 @@ final class postgres
 	 * name				getObjectInfo
 	 * access			public
 	 * author			Anderson Arruda < andmarruda@gmail.com >
-	 * param			string $relname
-	 * param			string $schema=NULL
-	 * return			object
+	 * param			
+	 * return			bool
 	 */
-	public function getObjectInfo(string $relname, ?string $schema=NULL) : object
+	protected function getObjectInfo() : bool
 	{
 		$stmt = $this->conn->prepare($this->classObject. ' SELECT * FROM pg_object_class WHERE (schema, class) = (?, ?)');
-		$stmt->execute([$schema, $relname]);
-		return $stmt->fetch(PDO::FETCH_ASSOC);
+		$stmt->execute([$this->schema, $this->relname]);
+		if($stmt->rowCount() > 0)
+		{
+			$this->dbOjectInfo = $stmt->fetch(PDO::FETCH_ASSOC);
+			return true;
+		}
+
+		return false;
 	}
 
 	/**
@@ -178,10 +183,26 @@ final class postgres
 	 * param			
 	 * return			array
 	 */
-	public function getColumns() : sqlAttributes
+	protected function getColumns() : object
 	{
-		$classDbInfo = $this->classDbInfo;
-		return new sqlAttributes($this->conn->execute($this->attrSql[$classDbInfo['type']], [$classDbInfo['schema'], $classDbInfo['relname']]));
+		$sql = 'WITH object_attributes AS ('. $this->attrSql[$this->dbObjectInfo['type']]. ') SELECT * FROM object_attributes WHERE (table_schema, table_name) = (?, ?)';
+		$stmt = $this->conn->prepare();
+		$stmt->execute([$this->schema, $this->relname]);
+		if($stmt->rowCount() > 0)
+		{
+			while($attr = $stmt->fetch(PDO::FETCH_ASSOC))
+			{
+				$this->cols[$attr['coluna']] = [
+					'type' 				=> $attr['tipo'],
+					'notnull'			=> !empty($attr['attrnotnull']) && $row['attnotnull'] == 1,
+					'typcategory'		=> $attr['typcategory'],
+					'default'			=> empty($attr['column_default']) && $attr['column_default'] != 0 ? NULL : $attr['column_default'],
+					'parameter_mode'	=> $attr['parameter_mode'] ?? NULL,
+					'setted_in_save'	=> false,
+					'value'				=> NULL
+				];
+			}
+		}
 	}
 
 	/**
