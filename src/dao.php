@@ -54,7 +54,7 @@ class dao extends vo{
 			return $this->selectFunction(...$arguments);
 		}
 
-		if($this->dbObjectInfo['type'] !== 'r' && $this->customIndex())
+		if($this->dbObjectInfo['type'] !== 'r' && $this->useIndex)
 			throw new \Exception('This class has no implementation to deal with index where for view or materialized view');
 
 		return $this->selectCommon(...$arguments);
