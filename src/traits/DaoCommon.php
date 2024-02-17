@@ -2,13 +2,14 @@
     namespace sysaengine\traits;
 
     use sysaengine\sql_helper\whereInterpreter;
+    use \PDO;
 
     trait DaoCommon{
         /**
          * Commont SQL
          * @var string
          */
-        protected string $commonSql = 'SELECT %S FROM %S';
+        protected string $commonSql = 'SELECT %s FROM %s';
 
         /**
          * Where preparation
