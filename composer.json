@@ -22,7 +22,8 @@
         "phpmailer/phpmailer": "*",
         "doctrine/orm": "^3",
         "doctrine/dbal": "^4",
-        "symfony/cache": "^7"
+        "symfony/cache": "^7",
+        "monolog/monolog": "^2"
     },
     "autoload": {
         "files": [

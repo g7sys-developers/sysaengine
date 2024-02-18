@@ -26,7 +26,9 @@ final class sysa{
         'port'      => NULL,
         'host'      => NULL,
         'user'      => NULL,
-        'pass'      => NULL
+        'pass'      => NULL,
+        'logPath'   => NULL,
+        'logName'   => NULL
     ];
 
     /**
@@ -43,11 +45,12 @@ final class sysa{
         'sysaengine\upload'                             => __DIR__.'/upload.class.php',
         'sysaengine\galeria'                            => __DIR__.'/galeria.class.php',
         'sysaengine\validacaoEmail'                     => __DIR__.'/validacaoEmail.class.php',
-        'sysaengine\utils'                              => __DIR__.'/utils.class.php',
+        'sysaengine\utils'                              => __DIR__.'/utils.php',
         'sysaengine\validacaoCelular'                   => __DIR__.'/validacaoCelular.class.php',
         'sysborg\strUtil'                               => __DIR__.'/../PHPUsefulFunctions/strUtil.class.php',
         'sysaengine\vo'                                 => __DIR__.'/vo.php',
         'sysaengine\dao'                                => __DIR__.'/dao.php',
+        'sysaengine\log'                                => __DIR__.'/log.php',
         'sysaengine\sql_helper\postgres'                => __DIR__.'/sql_helper/postgres.php',
         'sysaengine\conn'                               => __DIR__.'/conn.php',
         'sysaengine\traits\DaoCommon'                   => __DIR__.'/traits/DaoCommon.php',
@@ -175,6 +178,19 @@ final class sysa{
             self::$config['dbname'],
             self::$config['user'],
             self::$config['pass']
+        ];
+    }
+
+    /**
+     * Get log information
+     * 
+     * @return array
+     */
+    public static function getLogData() : array
+    {
+        return [
+            self::$config['logPath'],
+            self::$config['logName']
         ];
     }
 }
