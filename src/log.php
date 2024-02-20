@@ -1,7 +1,6 @@
 <?php
 namespace sysaengine;
 
-use Monolog\Level;
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\FirePHPHandler;
@@ -17,7 +16,7 @@ class log {
         list($logPath, $logName) = sysa::getLogData();
         $logger = new Logger($logName);
         $filename = "$logPath/$logName-".date('Y-m').'.log';
-        $logger->pushHandler(new StreamHandler($filename, Level::Info));
+        $logger->pushHandler(new StreamHandler($filename, Logger::INFO));
         $logger->pushHandler(new FirePHPHandler());
         $logger->info($message);
     }
@@ -32,7 +31,7 @@ class log {
         list($logPath, $logName) = sysa::getLogData();
         $logger = new Logger($logName);
         $filename = "$logPath/$logName-".date('Y-m').'.log';
-        $logger->pushHandler(new StreamHandler($filename, Level::Debug));
+        $logger->pushHandler(new StreamHandler($filename, Logger::DEBUG));
         $logger->pushHandler(new FirePHPHandler());
         $logger->debug($message);
     }
@@ -48,7 +47,7 @@ class log {
         list($logPath, $logName) = sysa::getLogData();
         $logger = new Logger($logName);
         $filename = "$logPath/$logName-".date('Y-m').'.log';
-        $logger->pushHandler(new StreamHandler($filename, Level::Warning));
+        $logger->pushHandler(new StreamHandler($filename, Logger::WARNING));
         $logger->pushHandler(new FirePHPHandler());
         $logger->warning($message);
     }
@@ -64,7 +63,7 @@ class log {
         list($logPath, $logName) = sysa::getLogData();
         $logger = new Logger($logName);
         $filename = "$logPath/$logName-".date('Y-m').'.log';
-        $logger->pushHandler(new StreamHandler($filename, Level::INFO));
+        $logger->pushHandler(new StreamHandler($filename, Logger::ERROR));
         $logger->pushHandler(new FirePHPHandler());
         $logger->error($message);
     }
