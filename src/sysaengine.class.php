@@ -199,6 +199,6 @@ final class sysa{
 spl_autoload_register(function($cls){
     $class = sysa::getClassPath($cls);
     if($class)
-        require_once \sysaengine\sysa::getClassPath($cls);
+        require_once $class;
 });
 ?>
