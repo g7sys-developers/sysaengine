@@ -55,7 +55,8 @@ final class sysa{
         'sysaengine\conn'                               => __DIR__.'/conn.php',
         'sysaengine\traits\DaoCommon'                   => __DIR__.'/traits/DaoCommon.php',
         'sysaengine\traits\DaoFunction'                 => __DIR__.'/traits/DaoFunction.php',
-        'sysaengine\sql_helper\whereInterpreter'        => __DIR__.'/sql_helper/whereInterpreter.php'
+        'sysaengine\sql_helper\whereInterpreter'        => __DIR__.'/sql_helper/whereInterpreter.php',
+        'sysaengine\response'                           => __DIR__.'/response.php'
     ];
 
     /**
