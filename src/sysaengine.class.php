@@ -124,10 +124,10 @@ final class sysa{
      * param                string $cls
      * return               string
      */
-    public static function getClassPath(string $cls) : string
+    public static function getClassPath(string $cls) : ?string
     {
         if(!isset(self::$classPath[$cls]))
-            throw new \Exception('A classe '. $cls. ' não foi encontrada. Nem seu path foi encontrado para autoload! Verifique a lista de arquivos do sysaengine\\sysa.');
+            return null;
 
         return self::$classPath[$cls];
     }
@@ -197,6 +197,8 @@ final class sysa{
 }
 
 spl_autoload_register(function($cls){
-    require_once \sysaengine\sysa::getClassPath($cls);
+    $class = sysa::getClassPath($cls);
+    if($class)
+        require_once $class;
 });
 ?>
