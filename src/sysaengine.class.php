@@ -57,6 +57,7 @@ final class sysa{
         'sysaengine\traits\DaoFunction'                 => __DIR__.'/traits/DaoFunction.php',
         'sysaengine\sql_helper\whereInterpreter'        => __DIR__.'/sql_helper/whereInterpreter.php',
         'sysaengine\router\Router'                      => __DIR__.'/router/Router.php',
+        'sysaengine\ResponseFacade'                     => __DIR__.'/ResponseFacade.php',
     ];
 
     /**
