@@ -7,7 +7,7 @@
   class Router {
     private static $routes = [];
 
-    public static function get(string $route, string $controller) : void
+    public static function get(string $route, array $controller) : void
     {
       self::$routes[$route] = [
         'method' => 'get',
@@ -15,7 +15,7 @@
       ];
     }
 
-    public static function post(string $route, string $controller) : void
+    public static function post(string $route, array $controller) : void
     {
       self::$routes[$route] = [
         'method' => 'post',
@@ -23,7 +23,7 @@
       ];
     }
 
-    public static function delete(string $route, string $controller) : void
+    public static function delete(string $route, array $controller) : void
     {
       self::$routes[$route] = [
         'method' => 'delete',
@@ -31,7 +31,7 @@
       ];
     }
 
-    public static function put(string $route, string $controller) : void
+    public static function put(string $route, array $controller) : void
     {
       self::$routes[$route] = [
         'method' => 'put',
@@ -39,10 +39,10 @@
       ];
     }
 
-    public static function run(string $uri) : void
+    public static function run() : void
     {
       $method = strtolower($_SERVER['REQUEST_METHOD']);
-      $route = explode('?', $uri)[0];
+      $route = explode('?', $_SERVER['REQUEST_URI'])[0];
       if(!array_key_exists($route, self::$routes)) {
         http_response_code(404);
         echo '404 - Not found'; die;
