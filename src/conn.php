@@ -21,9 +21,6 @@ use \Exception;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Connection;
 
-if(session_status()!=PHP_SESSION_ACTIVE)
-	session_start();
-
 final class conn{
 
     /**
