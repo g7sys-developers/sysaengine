@@ -27,7 +27,7 @@ class ResponseFacade
         }
 
         http_response_code($response->getStatusCode());
-        echo $response->getBody();
+        echo $response->getBody(); 
     }
 
     public static function redirect(string $url, int $status = 302, array $headers = []): Response
