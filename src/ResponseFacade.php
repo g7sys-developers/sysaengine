@@ -17,9 +17,17 @@ class ResponseFacade
         return $response;
     }
 
-    public static function json($data, int $status = 200, array $headers = []): JsonResponse
+    public static function json($data, int $status = 200, array $headers = [])
     {
-        return new JsonResponse($data, $status, $headers);
+        $response = new JsonResponse($data, $status, $headers);
+        foreach ($response->getHeaders() as $name => $values) {
+            foreach ($values as $value) {
+                header(sprintf('%s: %s', $name, $value), false);
+            }
+        }
+
+        http_response_code($response->getStatusCode());
+        echo $response->getBody();
     }
 
     public static function redirect(string $url, int $status = 302, array $headers = []): Response
