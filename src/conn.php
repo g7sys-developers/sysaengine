@@ -223,15 +223,15 @@ final class conn{
     }
 
     /**
-     * description      Get query builder from Doctrine DBAL
-     * @name            DB
+     * description      Get DBAL connection
+     * @name            DBALConnection
      * @access          public
      * @version         1.0.0
      * @author          Anderson Arruda < andmarruda@gmail.com >
-     * @param           
-     * @return          object
+     * @param
+     * @return          Connection
      */
-    public static function DB() : object
+    public static function DBALConnection() : Connection
     {
         if(!isset(self::$driverManager))
         {
@@ -246,6 +246,21 @@ final class conn{
             ]);
         }
 
+        return self::$driverManager;
+    }
+
+    /**
+     * description      Get query builder from Doctrine DBAL
+     * @name            DB
+     * @access          public
+     * @version         1.0.0
+     * @author          Anderson Arruda < andmarruda@gmail.com >
+     * @param           
+     * @return          object
+     */
+    public static function DB() : object
+    {
+        self::DBALConnection();
         return self::$driverManager->createQueryBuilder();
     }
 }
