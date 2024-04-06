@@ -26,6 +26,10 @@ class ResponseFacade
             }
         }
 
+        if (headers_sent()) {
+            ob_clean();
+        }
+        
         http_response_code($response->getStatusCode());
         echo $response->getBody(); 
     }
