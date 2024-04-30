@@ -61,6 +61,25 @@ class dao extends vo{
 	}
 
 	/**
+	 * Verify if some information exists
+	 * 
+	 * @access public
+	 * @version 2.0.0
+	 * @param	array $arguments
+	 * @return	bool
+	 */
+	public function exists(...$arguments) : bool
+	{
+		if($this->dbObjectInfo['type'] === 'FUNC')
+		{
+			throw new \Exception('This class has no implementation to deal with exists in function');
+		}
+
+		$select = $this->select('count(*) as total', ...$arguments);
+		return $select[0]['total'] > 0;
+	}
+
+	/**
 	 * Save data in selected table
 	 * 
 	 * @access public
