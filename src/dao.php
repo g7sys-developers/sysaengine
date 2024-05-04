@@ -80,6 +80,37 @@ class dao extends vo{
 	}
 
 	/**
+	 * Retorna html de combobox usando no DAO 1.0
+	 * 
+	 * @access public
+	 * @version 2.0.0
+	 * @param	
+	 */
+	public function selectToComboBox(string $fields, string $where='', string $orderBy='', string $groupBy='', string $selected='') : string
+	{
+		if($this->dbObjectInfo['type'] === 'FUNC')
+		{
+			throw new \Exception('This class has no implementation to deal with selectToComboBox in function');
+		}
+
+		$args = func_get_args();
+		$rows = $this->selectCommon(...$args);
+		if(array_key_exists('none', $rows[0]))
+			return '';
+
+		$html = '';
+		foreach($rows as $row) {
+			$v=array_values($row);
+			$val=(array_key_exists(0, $v)) ? $v[0] : '';
+			$text=(array_key_exists(0, $v)) ? $v[1] : '';
+			
+			$html .= $val == $selected ? "<option value='$val' selected>$text</option>" : "<option value='$val'>$text</option>";
+		}
+
+		return $html;
+	}
+
+	/**
 	 * Save data in selected table
 	 * 
 	 * @access public
