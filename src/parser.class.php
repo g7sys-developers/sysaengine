@@ -31,7 +31,7 @@ private $statement;
  * param 			
  * return 			void
 **/
-	public function __construct(\Cake\Database\Statement\PDOStatement $statement)
+	public function __construct(\PDOStatement $statement)
 	{
 		$this->statement = $statement;
 	}
