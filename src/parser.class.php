@@ -120,7 +120,7 @@ private $statement;
                 ];
             }
 
-            public function addGrid2(\Cake\Database\Statement\PDOStatement $statement, string $grid_id) : void
+            public function addGrid2(\PDOStatement $statement, string $grid_id) : void
             {
                 $p = new parser($statement);
                 $rows = $p->rowsToArray();
