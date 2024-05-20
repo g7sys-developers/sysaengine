@@ -31,7 +31,7 @@ private $statement;
  * param 			
  * return 			void
 **/
-	public function __construct(\Cake\Database\Statement\PDOStatement $statement)
+	public function __construct(\PDOStatement $statement)
 	{
 		$this->statement = $statement;
 	}
@@ -120,7 +120,7 @@ private $statement;
                 ];
             }
 
-            public function addGrid2(\Cake\Database\Statement\PDOStatement $statement, string $grid_id) : void
+            public function addGrid2(\PDOStatement $statement, string $grid_id) : void
             {
                 $p = new parser($statement);
                 $rows = $p->rowsToArray();
