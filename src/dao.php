@@ -16,6 +16,7 @@ namespace sysaengine;
 
 use sysaengine\traits\DaoCommon;
 use sysaengine\traits\DaoFunction;
+use sysaengine\parser;
 
 class dao extends vo{
 	use DaoCommon, DaoFunction;
@@ -49,13 +50,13 @@ class dao extends vo{
 	 */
 	public function select(...$arguments) : array
 	{
+		if($this->dbObjectInfo['type'] !== 'r' && $this->useIndex)
+			throw new \Exception('This class has no implementation to deal with index where for view or materialized view');
+
 		if($this->dbObjectInfo['type'] === 'FUNC')
 		{
 			return $this->selectFunction(...$arguments);
 		}
-
-		if($this->dbObjectInfo['type'] !== 'r' && $this->useIndex)
-			throw new \Exception('This class has no implementation to deal with index where for view or materialized view');
 
 		return $this->selectCommon(...$arguments);
 	}
@@ -127,6 +128,29 @@ class dao extends vo{
 		}
 
 		return false;
+	}
+
+	/**
+	 * Grid 2 compatible function parser
+	 * 
+	 * @access public
+	 * @version 2.0.0
+	 * @param string $fields
+	 * @param string $where
+	 * @param string $gridId
+	 * @param string $orderBy
+	 * @param string $groupBy
+	 * @param string $selected
+	 * @return never
+	 */
+	public function grid(string $fields, string $where='', string $gridId='', string $orderBy='', string $groupBy='') : never
+	{
+		if($this->dbObjectInfo['type'] !== 'r' && $this->useIndex)
+			throw new \Exception('This class has no implementation to deal with index where for view or materialized view');
+
+		$stmt = $this->selectStatement($fields, $where, $orderBy, $groupBy);
+		$parser = new parser($stmt);
+		$parser->grid2($gridId)->outputJson();
 	}
 }
 ?>

@@ -3,6 +3,7 @@
 
     use sysaengine\sql_helper\whereInterpreter;
     use \PDO;
+    use \PDOStatement;
 
     trait DaoCommon{
         /**
@@ -41,6 +42,29 @@
          */
         public function selectCommon(string $fields='*', string $where='', string $orderBy='', string $groupBy='') : array
         {
+            $stmt = $this->selectStatement(...func_get_args());
+            $results = [0 => ['none' => 'Nenhum resultado encontrado!']];
+
+            if($stmt->rowCount() > 0)
+            {
+                $results = [];
+                while($result=$stmt->fetch(PDO::FETCH_ASSOC))
+                    $results[] = $result;
+            }
+            
+            $this->useIndex = true;
+            return $results;
+        }
+
+        /**
+         * Common select to PDOStatement
+         * @version 1.0.0
+         * @author Anderson Arruda < andmarruda@gmail.com >
+         * @param
+         * @return PDOStatement
+         */
+        public function selectStatement(string $fields='*', string $where='', string $orderBy='', string $groupBy='') : PDOStatement
+        {
             $sql = sprintf($this->commonSql, $fields, $this->schema.'.'.$this->relname);
 
             if($where != '')
@@ -57,17 +81,8 @@
 
             $stmt = $this->conn->prepare($sql);
             $stmt->execute($preparedWhere['binds']);
-            $results = [0 => ['none' => 'Nenhum resultado encontrado!']];
 
-            if($stmt->rowCount() > 0)
-            {
-                $results = [];
-                while($result=$stmt->fetch(PDO::FETCH_ASSOC))
-                    $results[] = $result;
-            }
-            
-            $this->useIndex = true;
-            return $results;
+            return $stmt;
         }
     }
 ?>
