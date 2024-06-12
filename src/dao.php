@@ -141,9 +141,9 @@ class dao extends vo{
 	 * @param string $orderBy
 	 * @param string $groupBy
 	 * @param string $selected
-	 * @return never
+	 * @return void
 	 */
-	public function grid(string $fields, string $where='', string $gridId='', string $orderBy='', string $groupBy='') : never
+	public function grid(string $fields, string $where='', string $gridId='', string $orderBy='', string $groupBy='') : void
 	{
 		if($this->dbObjectInfo['type'] !== 'r' && $this->useIndex)
 			throw new \Exception('This class has no implementation to deal with index where for view or materialized view');
