@@ -24,7 +24,8 @@
         "doctrine/dbal": "^4",
         "symfony/cache": "^7",
         "monolog/monolog": "^2",
-        "laminas/laminas-diactoros": "^3.3"
+        "laminas/laminas-diactoros": "^3.3",
+        "aws/aws-sdk-php": "^3.314"
     },
     "autoload": {
         "files": [
