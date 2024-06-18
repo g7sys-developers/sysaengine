@@ -58,6 +58,7 @@ final class sysa{
         'sysaengine\sql_helper\whereInterpreter'        => __DIR__.'/sql_helper/whereInterpreter.php',
         'sysaengine\router\Router'                      => __DIR__.'/router/Router.php',
         'sysaengine\ResponseFacade'                     => __DIR__.'/ResponseFacade.php',
+        'sysaengine\DOS3'                               => __DIR__.'/DOS3.php',
     ];
 
     /**
