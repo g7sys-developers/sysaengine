@@ -12,11 +12,11 @@
 	* @copyright 	2021-2030
 	* @author 		Anderson Arruda < andmarruda@gmail.com >
 **/
-namespace sysaengine;
+namespace sysaengine\buckets;
 use Aws\S3\S3Client;
 use Aws\Exception\AwsException;
 
-class DOS3 {
+class DOS3 implements bucketInterface {
 	/**
 	 * S3 client
 	 * @var S3Client

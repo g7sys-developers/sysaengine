@@ -13,8 +13,9 @@
 	* @author 		Anderson M Arruda < andmarruda at gmail dot com >
 **/
 namespace sysaengine;
+use sysaengine\buckets\bucketInterface;
 
-class upload extends DOS3{
+class upload {
 	private $dependencias_js = [
 		'js/upload/upload.min.js'
 	];
@@ -79,10 +80,9 @@ class upload extends DOS3{
 	 * param 				string $bucketName
 	 * return 			void
 	 */
-	public function __construct()
+	public function __construct(bucketInterface $bucket)
 	{
 		$this->dbconn = conn::get_conn();
-		parent::__construct($bucketName ?? 'sysadmcom-pub');
 	}
 
 	/**
