@@ -143,7 +143,7 @@ final class conn{
     public static function get_conn(?array $attrs=NULL) : PDO
     {
         try {
-            list($host, $port, $name, $user, $pass) = sysa::getDbData();
+            list(,,, $user, $pass) = sysa::getDbData();
             if(!isset(self::$pdo)){
                 $attrs = isset($attrs) ? array_merge(self::$attrs, $attrs) : self::$attrs;
                 self::$pdo = new PDO(self::dsn(), $user, $pass, $attrs);
