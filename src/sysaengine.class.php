@@ -38,7 +38,7 @@ final class sysa{
     private static $classPath = [
         'sysaengine\amaengine1\utils'                   => __DIR__.'/amaengine_1_utils/utils.class.php',
         'sysaengine\filecontrol'                        => __DIR__.'/filecontrol.class.php',
-        'sysaengine\gcloud'                             => __DIR__.'/gcloud.class.php',
+        'sysaengine\buckets\gcloud'                             => __DIR__.'/buckets/gcloud.class.php',
         'sysaengine\parser'                             => __DIR__.'/parser.class.php',
         'sysaengine\autentiquev2\common'                => __DIR__.'/autentique/common.class.php',
         'sysaengine\history'                            => __DIR__.'/history.class.php',
@@ -58,7 +58,8 @@ final class sysa{
         'sysaengine\sql_helper\whereInterpreter'        => __DIR__.'/sql_helper/whereInterpreter.php',
         'sysaengine\router\Router'                      => __DIR__.'/router/Router.php',
         'sysaengine\ResponseFacade'                     => __DIR__.'/ResponseFacade.php',
-        'sysaengine\DOS3'                               => __DIR__.'/DOS3.php',
+        'sysaengine\buckets\DOS3'                       => __DIR__.'/buckets/DOS3.php',
+        'sysaengine\buckets\bucketInterface'            => __DIR__.'/buckets/bucketInterface.php',
     ];
 
     /**
