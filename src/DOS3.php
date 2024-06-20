@@ -36,19 +36,19 @@ class DOS3 {
 	 * @param
 	 * @return void
 	 */
-	public function __construct()
+	public function __construct(string $space_region, string $space_endpoint, string $space_key, string $space_secret, string $space_bucket)
 	{
 		$this->s3Client = new S3Client([
 			'version'     => 'latest',
-			'region'      => $_ENV['DO_SPACES_REGION'],
-			'endpoint'    => $_ENV['DO_SPACES_ENDPOINT'],
+			'region'      => $space_region,
+			'endpoint'    => $space_endpoint,
 			'credentials' => [
-				'key'    => $_ENV['DO_SPACES_KEY'],
-				'secret' => $_ENV['DO_SPACES_SECRET'],
+				'key'    => $space_key,
+				'secret' => $space_secret,
 			],
 		]);
 
-		$this->bucketName = $_ENV['DO_SPACES_BUCKET'];
+		$this->bucketName = $space_bucket;
 	}
 
 	/**

@@ -14,7 +14,7 @@
 **/
 namespace sysaengine;
 
-class upload extends gcloud{
+class upload extends DOS3{
 	private $dependencias_js = [
 		'js/upload/upload.min.js'
 	];
@@ -59,11 +59,6 @@ class upload extends gcloud{
 	protected $dbconn;
 
 	/**
-	 * Limite máximo pro upload de arquivo setado ao instanciar a classe
-	 */
-	private $maxSize;
-
-	/**
 	 * Variáveis de informações e debug da classe
 	 */
 	protected $infos=[
@@ -80,14 +75,13 @@ class upload extends gcloud{
 	 * access 			public
 	 * version 			1.0.0
 	 * author 			Anderson Arruda < andmarruda@gmail.com >
-	 * param 			string $dbname
-	 * param 			string $bucketName
+	 * param 				string $dbname
+	 * param 				string $bucketName
 	 * return 			void
 	 */
-	public function __construct(?string $dbname=NULL, ?string $bucketName=NULL, ?int $maxSize=NULL)
+	public function __construct()
 	{
-		$this->dbconn = sysa::cakeConn($dbname);
-		$this->maxSize = $maxSize;
+		$this->dbconn = conn::get_conn();
 		parent::__construct($bucketName ?? 'sysadmcom-pub');
 	}
 
