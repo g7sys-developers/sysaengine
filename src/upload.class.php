@@ -594,35 +594,18 @@ class upload {
 	
         return $messages[$errorCode] ?? 'Erro de upload desconhecido';
 	}
-
-	/**
-	 * description 			Pega a url externa do arquivo num bucket do Gcloud
-	 * access 				public
-	 * version 				1.0.0
-	 * author 				Anderson Arruda < andmarruda@gmail.com >
-	 * param 				int $id_filecenter
-	 * return 				mixed
-	 */
-	public function neverArquivoBucket(int $id_filecenter)
-	{
-		
-	}
 	
 	/**
-	 * description       	Invoca dependências do javascript para o novo sistema de upload
-	 * access				public
-	 * version				1.0.0
-	 * author 				Anderson Arruda < andmarruda@gmail.com >
-	 * param 				
-	 * return				string
-	**/
-	public function invocarJs() : string
+	 * Returns path of the upload javascript file
+	 * @access				public
+	 * @version				1.0.0
+	 * @author 				Anderson Arruda < andmarruda@gmail.com >
+	 * @param
+	 * @return				string
+	 */
+	public static function getJavascriptPath() : string
 	{
-		$js = '';
-		foreach($this->dependencias_js as $dependencia)
-			$js .= '<script type="text/javascript" src="'. sysa::getUrlBase(). $dependencia. '"></script>';
-
-		return $js;
+		return __DIR__. '/js/upload/dist/upload.min.js';
 	}
 
 	/**
