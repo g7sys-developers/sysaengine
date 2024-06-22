@@ -4,7 +4,7 @@
  */
 
 class upload extends uploadHtml{
-    constructor(bucketName){
+    constructor() {
         super();
         let initialUrl = location.href.replace(/\?.*/g, '');
         initialUrl = initialUrl.substr(0, initialUrl.lastIndexOf('/')) + '/';
@@ -17,16 +17,12 @@ class upload extends uploadHtml{
         this._header.append('sysadmcom_key', this._randomKey);
         this._header.append('Access-Control-Allow-Origin', '*');
 
-        if(!this.verificaBucketName(bucketName))
-            return;
-
         this._extensoesProibidas = ['php', 'js', 'bat', 'sh', 'exe', 'com', 'reg', 'cmd', 'bin', 'csh', 'ksh', 'out', 'run'];
         this._maxSize = 20971520;
         this._extensaoPermitidas = [];
         this._erros = [];
         this._id_filecenter_gallery;
         this._filesInGallery = [];
-        this._bucketName = bucketName;
         this._uploadFile = 'upload.php';
         this._uploadFileTemp = 'uploadTemp.php';
         this._loadFile = 'carrega_galeria.php';
@@ -261,30 +257,6 @@ class upload extends uploadHtml{
     }
 
     /**
-     * Verifica se o bucket name existe e tem permissão para ser utilizado através da interface de usuário do Sysadmcom
-     * @param       string bucketName
-     * @return      bool
-     */
-    verificaBucketName = async (bucketName) => {
-        bucketName = bucketName || this._bucketName;
-        if(bucketName.length === 0 || typeof bucketName !== 'string'){
-            console.log('Bucket Name inválido! Verifique a ortografia e tente novamente!');
-            return false;
-        }
-
-        this._header.delete('Content-Type') || null;
-        this._header.append('Content-type', 'application/json');
-        let f = await fetch(this._initialUrl + this._urlBase + this._verifyFile, {
-            'method': 'POST',
-            'headers': this._header,
-            'body': JSON.stringify({'verificar': 'gcloud_bucket', 'gcloud_bucket': bucketName})
-        });
-        let j = await f.json();
-
-        return true;
-    }
-
-    /**
      * Seta um tamanho máximo de arquivo em byte. Não adianta extrapolar o limite do servidor pois o mesmo 
      * não irá obedecer a interface de usuário e sim as configurações propostas no server-side
      * @param       int sizeBit
@@ -353,7 +325,6 @@ class upload extends uploadHtml{
      */
     _geraFormData(){
         let fd = new FormData();
-        fd.append('gcloud_bucket', this._bucketName);
         fd.append('filesize_limit', this._maxSize);
         if(typeof this._id_filecenter_gallery !== 'undefined' && /^[0-9]{1,}$/g.test(this._id_filecenter_gallery))
             fd.append('id_galeria', this._id_filecenter_gallery);
