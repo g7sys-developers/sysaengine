@@ -14,8 +14,7 @@ class upload extends uploadHtml{
         this._verifyFile = 'pesquisa_dados_galeria.php';
         this._randomKey = '95BD84A89896826954ADF71A851F4';
         this._header = new Headers();
-        this._header.append('sysadmcom_key', this._randomKey);
-        this._header.append('Access-Control-Allow-Origin', '*');
+        this._header.append('Secuitykey', this._randomKey);
 
         this._extensoesProibidas = ['php', 'js', 'bat', 'sh', 'exe', 'com', 'reg', 'cmd', 'bin', 'csh', 'ksh', 'out', 'run'];
         this._maxSize = 20971520;
@@ -360,19 +359,28 @@ class upload extends uploadHtml{
 
         this._header.delete('Content-Type') || null;
         let fd = this._geraFormData();
+        console.log(this._header);
         let f = await fetch(this._initialUrl + this._urlBase + (this._uploadTemporario ? this._uploadFileTemp : this._uploadFile), {
             method: 'POST',
             headers: this._header,
             body: fd
         });
-        let j = await f.json();
-        if(j.upload){
-            if(!this._uploadFileTemp)
-                this._id_filecenter_gallery = j.id_galeria;
 
-            this.setaArquivosGaleria(j.dadosGaleria);
+        console.log(f.headers);
+
+        if (f.status === 200) {
+            let j = await f.json();
+            if(j.upload){
+                if(!this._uploadFileTemp)
+                    this._id_filecenter_gallery = j.id_galeria;
+
+                this.setaArquivosGaleria(j.dadosGaleria);
+            }
+            
+            return j;
         }
 
-        return j;
+        alert(await f.text());
+        return {};
     }
 };

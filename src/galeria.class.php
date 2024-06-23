@@ -13,6 +13,7 @@
 	* @author 		Anderson M Arruda < andmarruda at gmail dot com >
 **/
 namespace sysaengine;
+use sysaengine\buckets\bucketInterface;
 
 class galeria extends upload{
     /**
@@ -20,19 +21,19 @@ class galeria extends upload{
 	 */
 	protected $id_galeria;
 
-    /**
+	/**
 	 * description 		Constrói a classe passando o nome do banco de dados conectado
 	 * access 			public
 	 * version 			1.0.0
 	 * author 			Anderson Arruda < andmarruda@gmail.com >
-	 * param 			string $dbname
-     * param 			string $bucketName
+	 * param 				string $dbname
+	 * param 				string $bucketName
 	 * return 			void
 	 */
-    public function __construct(?string $dbname=NULL, ?string $bucketName=NULL, ?int $maxSize=NULL)
-    {
-        parent::__construct($dbname, $bucketName, $maxSize);
-    }
+	public function __construct(bucketInterface $bucket)
+	{
+		parent::__construct($bucket);
+	}
 
     /**
      * description      Seta o id da galeria para o carregamento de seus respectivos dados
@@ -58,7 +59,7 @@ class galeria extends upload{
 	 */
 	public function criaGaleria() : galeria
 	{
-		$stmt = $this->dbconn->execute('INSERT INTO development.filecenter_gallery(status_ativo) VALUES(true) RETURNING id_filecenter_gallery', []);
+		$stmt = $this->dbconn->query('INSERT INTO development.filecenter_gallery(status_ativo) VALUES(true) RETURNING id_filecenter_gallery');
 		if($stmt->rowCount() == 0)
 			throw new \Exception("Erro ao criar a galeria");
 
