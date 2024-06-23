@@ -16,10 +16,6 @@ namespace sysaengine;
 use sysaengine\buckets\bucketInterface;
 
 class upload {
-	private $dependencias_js = [
-		'js/upload/upload.min.js'
-	];
-
 	/**
 	 * Path dos arquivos internos do Sysadmcom - Posteriormente será uma pasta temporária para download de arquivos do bucket do cloud storage
 	 */
@@ -63,8 +59,14 @@ class upload {
 	 * Variáveis de informações e debug da classe
 	 */
 	protected $infos=[
-		'lastError' => NULL
+		'lastError' => NULL,
+		'maxSize' => 21000000,
 	];
+
+	/**
+	 * Bucket de armazenamento
+	 */
+	protected bucketInterface $bucket;
 
 	/**
 	 * Lista de erro de arquivos do upload
@@ -83,6 +85,7 @@ class upload {
 	public function __construct(bucketInterface $bucket)
 	{
 		$this->dbconn = conn::get_conn();
+		$this->bucket = $bucket;
 	}
 
 	/**
