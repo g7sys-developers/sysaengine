@@ -341,16 +341,16 @@ class upload {
 	 */
 	public function nomeExiste(string $filename) : bool
 	{
-		$sql = 'SELECT COUNT(*) AS total FROM development.filecenter WHERE name_file=?';
-		$stmt = $this->dbconn->execute($sql, [$filename]);
+		$sql = 'SELECT * FROM development.filecenter WHERE name_file=?';
+		$stmt = $this->dbconn->prepare($sql);
+		$stmt->execute([$filename]);
 		if($stmt->rowCount() === 0)
 			return false;
 
 		$row = $stmt->fetch(\PDO::FETCH_ASSOC);
-		if($row['total'] === 0)
-			return false;
+		$file_key = $row['file_key'];
 
-		if($this->bucketName != '' && !$this->gcloudArquivoExiste($filename))
+		if($this->bucketName != '' && !$this->exists($file_key))
 			return false;
 
 		return true;
@@ -452,11 +452,14 @@ class upload {
 	 * param 			int $codigo_usuario
 	 * return 			int
 	 */
-	private function insereFilecenter(string $name, string $original, float $size, int $codigo_usuario, ?string $temporaryFinalDate=NULL, ?int $id_filecenter_gallery=NULL) : int
+	private function insereFilecenter(string $name, string $original, float $size, int $codigo_usuario, int $id_filecenter_gallery, string $file_key) : int
 	{
-		$infos = $this->bucketInfoByName($this->bucketName);
-		$sql = 'INSERT INTO development.filecenter (name_file, original_filename, file_size, codigo_usuario_insert, is_gcloud_storage, id_gcloud_bucket, temporary_final_date, id_filecenter_gallery) VALUES(?, ?, ?, ?, ?, ?, ?, ?) RETURNING *';
-		$stmt = $this->dbconn->execute($sql, [$name, $original, $size, $codigo_usuario, true, $infos['id_gcloud_bucket'], $temporaryFinalDate, $id_filecenter_gallery]);
+		$sql = 'INSERT INTO development.filecenter (
+			name_file, original_filename, file_size, bucket_name,
+			codigo_usuario_insert, id_filecenter_gallery, file_key
+		) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING *';
+		$stmt = $this->dbconn->prepare($sql);
+		$stmt->execute([$name, $original, $size, $this->bucket->getBucketName(), $codigo_usuario, $id_filecenter_gallery, $file_key]);
 		if($stmt->rowCount()===0)
 			return -1;
 
@@ -475,7 +478,8 @@ class upload {
 	private function deletaFilecenter(int $id_filecenter) : bool
 	{
 		$sql = 'WITH delFilecenter AS (DELETE FROM development.filecenter WHERE id_filecenter=? RETURNING *) SELECT * FROM delFilecenter';
-		$stmt = $this->dbconn->execute($sql, [$id_filecenter]);
+		$stmt = $this->dbconn->prepare($sql);
+		$stmt->execute([$id_filecenter]);
 		if($stmt->rowCount()===0)
 			return false;
 
@@ -645,7 +649,9 @@ class upload {
 			JOIN development.gcloud_bucket dgb USING(id_gcloud_bucket)
 		WHERE
 			dfg.id_filecenter_gallery=? AND df.is_gcloud_storage';
-		$rows = sysa::parser($this->dbconn->execute($sql, [$id_filecenter_gallery]))->rowsToArray();
+		$stmt = $this->dbconn->prepare($sql);
+		$stmt->execute([$id_filecenter_gallery]);
+		$rows = sysa::parser($stmt)->rowsToArray();
 		return json_encode($rows);
 	}
 
@@ -715,30 +721,6 @@ class upload {
 		}
 
 		return $r;
-	}
-
-	/**
-	 * Download do arquivo do gcloud para o servidor interno de maneira temporária
-	 * access 				public
-	 * version 				1.0.0
-	 * author 				Anderson Arruda < andmarruda@gmail.com >
-	 * param 				int $id_filecenter
-	 * return 				string 'qndo length = 0 | arquivo não existe no banco de dados ou algum erro aconteceu ou não está no gcloud
-	 */
-	public function gcloudToInternalTemp(int $id_filecenter) : string
-	{
-		$arquivo = $this->pegaDadosArquivo($id_filecenter);
-		if(is_null($arquivo) || !$arquivo['is_gcloud_storage'])
-			return '';
-
-		$path = self::INTERNAL_TEMP_PATH. $arquivo['name_file'];
-		if(file_exists($path))
-			return $path;
-
-		if($this->download($arquivo['name_file'], $path))
-			return $path;
-
-		return '';
 	}
 
 	/**
@@ -903,9 +885,9 @@ class upload {
 			$path = self::INTERNAL_PATH. $nome;
 			if(@move_uploaded_file($arquivos['tmp_name'][$idx], $path)){
 				$size = filesize($path);
-				$uploaded = $this->upload($path);
-				if($this->verificaTransferenciaGcloud($uploaded)){
-					$id = $this->insereFilecenter($nome, $arquivos['name'][$idx], $size, $codigo_usuario, NULL, $this->id_galeria);
+				$file_key = $this->bucket->upload($path);
+				if($this->bucket->exists($file_key)){
+					$id = $this->insereFilecenter($nome, $arquivos['name'][$idx], $size, $codigo_usuario, NULL, $this->id_galeria, $file_key);
 					unlink($path);
 				}
 			}

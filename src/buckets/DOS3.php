@@ -52,6 +52,16 @@ class DOS3 implements bucketInterface {
 	}
 
 	/**
+	 * Get bucket name
+	 * 
+	 * @return string
+	 */
+	public function getBucketName() : string
+	{
+		return $this->bucketName;
+	}
+
+	/**
 	 * Upload file to Digital Ocean Spaces
 	 * 
  	 * param        string $filepath
@@ -69,6 +79,8 @@ class DOS3 implements bucketInterface {
 				'Body'   => $resource,
 				'ACL'    => 'public-read',
 			]);
+
+			return $key;
 		} catch (AwsException $e) {
 			echo $e->getMessage();
 		}
@@ -108,5 +120,25 @@ class DOS3 implements bucketInterface {
 		$request = $this->s3Client->createPresignedRequest($cmd, '+5 minutes');
 
 		return (string) $request->getUri();
+	}
+
+	/**
+	 * Verify if the file exists on digital ocean spaces
+	 * 
+	 * param        string $key
+	 * @return      bool
+	 */
+	public function exists(string $key)
+	{
+		try {
+			$this->s3Client->headObject([
+				'Bucket' => $this->bucketName,
+				'Key'    => $key,
+			]);
+		} catch (AwsException $e) {
+			return false;
+		}
+
+		return true;
 	}
 }
