@@ -197,6 +197,21 @@ final class sysa{
             self::$config['logName']
         ];
     }
+
+    /**
+     * description          Retorna a classe parser correspondente ao método de entrada
+     * access               public
+     * author               Anderson Arruda < andmarruda@gmail.com >
+     * param                object $obj
+     * return               object | false
+     */
+    public static function parser(object $obj)
+    {
+        if($obj instanceof \PDOStatement)
+            return new parser($obj);
+
+        return false;
+    }
 }
 
 spl_autoload_register(function($cls){
