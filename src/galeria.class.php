@@ -26,13 +26,13 @@ class galeria extends upload{
 	 * access 			public
 	 * version 			1.0.0
 	 * author 			Anderson Arruda < andmarruda@gmail.com >
-	 * param 				string $dbname
-	 * param 				string $bucketName
+	 * param 				bucketInterface $bucket
+	 * param 				string $tempPath
 	 * return 			void
 	 */
-	public function __construct(bucketInterface $bucket)
+	public function __construct(bucketInterface $bucket, string $tempPath)
 	{
-		parent::__construct($bucket);
+		parent::__construct($bucket, $tempPath);
 	}
 
     /**
