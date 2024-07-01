@@ -27,11 +27,6 @@ class upload {
 	const EXTERNAL_PATH='https://www.sysadmcom.com.br/sysadmcom/versoes/upload/upload/';
 
 	/**
-	 * Path para os arquivos temporários do Sysadmcom
-	 */
-	const INTERNAL_TEMP_PATH = '/var/www/html/sysadmcom/versoes/upload/upload/temp/';
-
-	/**
 	 * Informações sobre o UPLOAD ERROR CODE
 	 */
 	const UPL_ERR_MESSAGES = [
@@ -64,11 +59,6 @@ class upload {
 	];
 
 	/**
-	 * Bucket de armazenamento
-	 */
-	protected bucketInterface $bucket;
-
-	/**
 	 * Lista de erro de arquivos do upload
 	 */
 	protected $fileErrList = [];
@@ -82,7 +72,10 @@ class upload {
 	 * param 				string $bucketName
 	 * return 			void
 	 */
-	public function __construct(bucketInterface $bucket)
+	public function __construct(
+		protected bucketInterface $bucket,
+		protected string $tempPath
+	)
 	{
 		$this->dbconn = conn::get_conn();
 		$this->bucket = $bucket;
@@ -548,36 +541,6 @@ class upload {
 		return $url.$f['name_file'];
 	}
 
-	
-
-	/**
-	 * description 			Upload de arquivo único para o Google Bucket
-	 * access 				public
-	 * version 				1.0.0
-	 * author 				Anderson Arruda < andmarruda@gmail.com >
-	 * param 				array $arquivo
-	 * param 				int $codigo_usuario
-	 * return 				?int
-	 */
-	public function uploadArquivoUnicoGcloud(array $arquivo, int $codigo_usuario, ?int $id_galeria=NULL) : ?int
-	{
-		$nome = $this->geraNome($arquivo['name']);
-		$path = self::INTERNAL_PATH. $nome;
-		if(@move_uploaded_file($arquivo['tmp_name'], $path)){
-			$size = filesize($path);
-			$uploaded = $this->upload($path);
-			if($this->verificaTransferenciaGcloud($uploaded)){
-				$id = $this->insereFilecenter($nome, $arquivo['name'], $size, $codigo_usuario);
-				unlink($path);
-				return $id;
-			}
-
-			return null;
-		}
-
-		return null;
-	}
-
 	/**
 	 * description 			Verificação de upload do arquivo e converte em mensagem ao usuário
 	 * access 				public
@@ -737,7 +700,7 @@ class upload {
 		if(is_null($arquivo) || !$arquivo['is_gcloud_storage'])
 			return false;
 
-		$path = self::INTERNAL_TEMP_PATH. $arquivo['name_file'];
+		$path = self::INTERNAL_PATH. $arquivo['name_file'];
 		return file_exists($path);
 	}
 
@@ -755,7 +718,7 @@ class upload {
 		if(is_null($arquivo) || !$arquivo['is_gcloud_storage'])
 			return false;
 
-		$path = self::INTERNAL_TEMP_PATH. $arquivo['name_file'];
+		$path = self::INTERNAL_PATH. $arquivo['name_file'];
 		if(!file_exists($path))
 			return false;
 
@@ -772,24 +735,11 @@ class upload {
 	 */
 	public function deletaInternalTempName(string $name) : bool
 	{
-		$path = self::INTERNAL_TEMP_PATH. $name;
+		$path = self::INTERNAL_PATH. $name;
 		if(!file_exists($path))
 			return false;
 
 		return unlink($path);
-	}
-
-	/**
-	 * Remove todos os arquivos temporários da pasta
-	 * access 				public
-	 * version 				1.0.0
-	 * author 				Anderson Arruda < andmarruda@gmail.com >
-	 * param 				
-	 * return 				void
-	 */
-	public function deletaTodosTemp() : void
-	{
-		@shell_exec('rm '. self::INTERNAL_TEMP_PATH. '* -R');
 	}
 
 	/**
@@ -849,7 +799,7 @@ class upload {
 			}
 
 			$nome = $this->geraNome($arquivos['name'][$idx]);
-			$path = self::INTERNAL_TEMP_PATH. $nome;
+			$path = self::INTERNAL_PATH. $nome;
 			if(@move_uploaded_file($arquivos['tmp_name'][$idx], $path)){
 				$ret['arquivos'][] = $nome;
 			}
@@ -882,11 +832,11 @@ class upload {
 			}			
 
 			$nome = $this->geraNome($arquivos['name'][$idx]);
-			$path = self::INTERNAL_PATH. $nome;
+			$path = $this->tempPath. $nome;
 			if(@move_uploaded_file($arquivos['tmp_name'][$idx], $path)){
 				$size = filesize($path);
 				$file_key = $this->bucket->upload($path);
-				if($this->bucket->exists($file_key)){
+				if ($this->bucket->exists($file_key)) {
 					$id = $this->insereFilecenter($nome, $arquivos['name'][$idx], $size, $codigo_usuario, NULL, $this->id_galeria, $file_key);
 					unlink($path);
 				}
