@@ -45,8 +45,13 @@ class galeria extends upload{
      */
     public function carregaGaleria(int $id_galeria) : galeria
     {
-        $this->id_galeria = $id_galeria;
-        return $this;
+			$stmt = $this->dbconn->prepare('SELECT * FROM development.filecenter_gallery WHERE id_filecenter_gallery = ?');
+			$stmt->execute([$id_galeria]);
+			if($stmt->rowCount() == 0)
+				throw new \Exception("Galeria não encontrada");
+
+      $this->id_galeria = $id_galeria;
+      return $this;
     }
 
     /**
@@ -82,16 +87,23 @@ class galeria extends upload{
 	}
 
 	/**
-	 * Transfere uma galeria de dentro da VM do Sysadmcom para um servidor externo. "após o envio e confirmação de envio o mesmo é deletado do servidor local!"
-	 * access 			public
-	 * version 			1.0.0
-	 * author 			Anderson Arruda < andmarruda@gmail.com >
-	 * param 			
-	 * return 			bool
+	 * Carrega os arquivos pertencentes a uma galeria e ja 
+	 * retorna com a url temporária para exibição
+	 * 
+	 * @param
+	 * @return array
 	 */
-	public function transfereGaleriaParaGcloud(int $id_filecenter_gallery) : bool
+	public function carregaArquivos() : array
 	{
-		return false;
+		$stmt = $this->dbconn->prepare('SELECT * FROM development.filecenter WHERE id_filecenter_gallery = ?');
+		$stmt->execute([$this->id_galeria]);
+		$files = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+		foreach($files as $key => $file)
+		{
+			$files[$key]['url'] = $this->bucket->getTemporaryUrl($file['file_key']);
+		}
+
+		return $files;
 	}
 }
 ?>
