@@ -354,16 +354,15 @@ class upload {
 	 * access 			public
 	 * version 			1.0.0
 	 * author 			Anderson Arruda < andmarruda@gmail.com >
-	 * param 			string $originalName
+	 * param 			  
 	 * return 			string
 	 */
-	public function geraNome(string $originalName) : string
+	public function geraNome() : string
 	{
-		$name = microtime(). $originalName;
-		$name = str_replace(' ', '', $name);
+		$name = microtime(true);
 		while($this->nomeExiste($name)){
 			$rand = rand(0, getrandmax());
-			$name = microtime(). $rand. $originalName;
+			$name = microtime(). $rand;
 			$name = str_replace(' ', '', $name);
 		}
 		return $name;
@@ -414,27 +413,6 @@ class upload {
 	}
 
 	/**
-	 * Download de arquivo e transfere pro Gcloud
-	 * access 			public
-	 * version 			1.0.0
-	 * author 			Anderson Arruda < andmarruda@gmail.com >
-	 * param 			string $url
-	 * param 			string $originalName
-	 * return 			int
-	 */
-	public function downloadToGcloud(string $url, string $originalName, int $codigo_usuario) : int
-	{
-		$pdf = file_get_contents($url);
-		$name = $this->geraNome($originalName);
-		file_put_contents(self::INTERNAL_PATH. $name, $pdf);
-		$size = filesize(self::INTERNAL_PATH. $name);
-		$this->upload(self::INTERNAL_PATH. $name);
-		unlink(self::INTERNAL_PATH. $name);
-
-		return $this->insereFilecenter($name, $originalName, $size, $codigo_usuario);
-	}
-
-	/**
 	 * Cria a linha de controle do filecenter para uploads do Gcloud
 	 * access 			private
 	 * version 			1.0.0
@@ -450,11 +428,13 @@ class upload {
 		$sql = 'INSERT INTO development.filecenter (
 			name_file, original_filename, file_size, bucket_name,
 			codigo_usuario_insert, id_filecenter_gallery, file_key
-		) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING *';
+		) VALUES(?, ?, ?, ?, ?, ?, ?) RETURNING *';
 		$stmt = $this->dbconn->prepare($sql);
 		$stmt->execute([$name, $original, $size, $this->bucket->getBucketName(), $codigo_usuario, $id_filecenter_gallery, $file_key]);
-		if($stmt->rowCount()===0)
+		if($stmt->rowCount()===0) {
+			var_dump('erro inserindo'); die;
 			return -1;
+		}
 
 		$row=$stmt->fetch(\PDO::FETCH_ASSOC);
 		return $row['id_filecenter'];
@@ -798,7 +778,7 @@ class upload {
 				continue;
 			}
 
-			$nome = $this->geraNome($arquivos['name'][$idx]);
+			$nome = $this->geraNome();
 			$path = self::INTERNAL_PATH. $nome;
 			if(@move_uploaded_file($arquivos['tmp_name'][$idx], $path)){
 				$ret['arquivos'][] = $nome;
@@ -831,13 +811,14 @@ class upload {
 				continue;
 			}			
 
-			$nome = $this->geraNome($arquivos['name'][$idx]);
-			$path = $this->tempPath. $nome;
+			$info = pathinfo($arquivo);
+			$nome = $this->geraNome(). '.'. $info['extension'];
+			$path = $this->tempPath. '/'. $nome;
 			if(@move_uploaded_file($arquivos['tmp_name'][$idx], $path)){
 				$size = filesize($path);
 				$file_key = $this->bucket->upload($path);
 				if ($this->bucket->exists($file_key)) {
-					$id = $this->insereFilecenter($nome, $arquivos['name'][$idx], $size, $codigo_usuario, NULL, $this->id_galeria, $file_key);
+					$id = $this->insereFilecenter($nome, $arquivo, $size, $codigo_usuario, $this->id_galeria, $file_key);
 					unlink($path);
 				}
 			}

@@ -46,6 +46,7 @@ class DOS3 implements bucketInterface {
 				'key'    => $space_key,
 				'secret' => $space_secret,
 			],
+			'use_path_style_endpoint' => true,
 		]);
 
 		$this->bucketName = $space_bucket;
@@ -72,18 +73,14 @@ class DOS3 implements bucketInterface {
 		$key = basename($filepath);
 		$resource = fopen($filepath, 'r');
 
-		try {
-			$this->s3Client->putObject([
-				'Bucket' => $this->bucketName,
-				'Key'    => $key,
-				'Body'   => $resource,
-				'ACL'    => 'public-read',
-			]);
+		$this->s3Client->putObject([
+			'Bucket' => $this->bucketName,
+			'Key'    => $key,
+			'Body'   => $resource,
+			'ACL'    => 'private',
+		]);
 
-			return $key;
-		} catch (AwsException $e) {
-			echo $e->getMessage();
-		}
+		return $key;
 	}
 
 	/**
