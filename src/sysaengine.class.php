@@ -60,6 +60,7 @@ final class sysa{
         'sysaengine\ResponseFacade'                     => __DIR__.'/ResponseFacade.php',
         'sysaengine\buckets\DOS3'                       => __DIR__.'/buckets/DOS3.php',
         'sysaengine\buckets\bucketInterface'            => __DIR__.'/buckets/bucketInterface.php',
+        'sysaengine\xml'                                => __DIR__.'/xml.php',
     ];
 
     /**
