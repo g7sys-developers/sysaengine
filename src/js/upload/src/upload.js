@@ -336,10 +336,10 @@ class upload extends uploadHtml{
 
     /**
      * Faz as verificações necessárias dos arquivos e os envia posteriormente ao servidor causando um armazenamento no Gcloud FileStore e nos dados do Database. Retorna sempre um id_filecenter_gallery
-     * @param       string bucketName
+     * @param       boolean loadGallery
      * @return      JSON{id_filecenter_gallery: int, error: string|null}
      */
-    async send(){
+    async send(loadGallery=false){
         if(!this.verificaArquivosSelecionados()){
             alert("Arquivos com extensões inválidas ou tamanho do arquivo excedente encontrados!");
             return null;
@@ -366,11 +366,9 @@ class upload extends uploadHtml{
             body: fd
         });
 
-        console.log(f.headers);
-
         if (f.status === 200) {
             let j = await f.json();
-            if(j.upload){
+            if(j.upload && loadGallery){
                 if(!this._uploadFileTemp)
                     this._id_filecenter_gallery = j.id_galeria;
 

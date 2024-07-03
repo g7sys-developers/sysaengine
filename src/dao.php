@@ -17,6 +17,7 @@ namespace sysaengine;
 use sysaengine\traits\DaoCommon;
 use sysaengine\traits\DaoFunction;
 use sysaengine\parser;
+use sysaengine\xml;
 
 class dao extends vo{
 	use DaoCommon, DaoFunction;
@@ -151,6 +152,21 @@ class dao extends vo{
 		$stmt = $this->selectStatement($fields, $where, $orderBy, $groupBy);
 		$parser = new parser($stmt);
 		$parser->grid2($gridId)->outputJson();
+	}
+
+	/**
+	 * Select to form
+	 * 
+	 * @access public
+	 * @version 1.0.0
+	 */
+	public function selectToForm(string $fields, string $where, string $formId, string $orderBy='', string $groupBy='')
+	{
+		if($this->dbObjectInfo['type'] === 'f' && $this->useIndex)
+			throw new \Exception('This class has no implementation to deal with index where for view or materialized view');
+
+		$rows = $this->selectCommon($fields, $where, $orderBy, $groupBy);
+		xml::searchEngineToXmlAll($rows[0], $formId);
 	}
 }
 ?>
