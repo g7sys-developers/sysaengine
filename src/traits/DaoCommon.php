@@ -80,7 +80,7 @@
                 $sql .= " ORDER BY $orderBy" ;
 
             $stmt = $this->conn->prepare($sql);
-            $stmt->execute($preparedWhere['binds']);
+            $stmt->execute($preparedWhere['binds'] ?? []);
 
             return $stmt;
         }
