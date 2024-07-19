@@ -18,6 +18,7 @@ use sysaengine\traits\DaoCommon;
 use sysaengine\traits\DaoFunction;
 use sysaengine\parser;
 use sysaengine\xml;
+use \PDO;
 
 class dao extends vo{
 	use DaoCommon, DaoFunction;
@@ -27,6 +28,18 @@ class dao extends vo{
 	 * @bool
 	 */
 	protected $useIndex = true;
+
+	/**
+	 * Save's SQL
+	 * @var string
+	 */
+	protected $saveSql = 'INSERT INTO %s.%s (%s) VALUES (%s) ON CONFLICT ON CONSTRAINT %s DO UPDATE SET %s RETURNING *';
+
+	/**
+	 * Armazena os valores do ultimo insert
+	 * @var array
+	 */
+	protected array $lastInsert = [];
 
 	/**
 	 * Set to use where customized
@@ -113,6 +126,19 @@ class dao extends vo{
 	}
 
 	/**
+	 * Retorna o ultimo valor inserido
+	 * 
+	 * @access public
+	 * @version 2.0.0
+	 * @param
+	 * @return	array
+	 */
+	public function getLastValuesInserted() : array
+	{
+		return $this->lastInsert;
+	}
+
+	/**
 	 * Save data in selected table
 	 * 
 	 * @access public
@@ -128,7 +154,28 @@ class dao extends vo{
 			throw new \Exception("Is not possible to save data in function, materialized view or view using this class.");
 		}
 
-		return false;
+		try {
+			$infos = $this->saveInfo();
+
+			$sql = sprintf(
+				$this->saveSql,
+				$this->schema,
+				$this->relname,
+				$infos['cols'],
+				$infos['values'],
+				$this->getPkeyName(),
+				$infos['updateCols']
+			);
+
+			$this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+			$stmt = $this->conn->prepare($sql);
+			$stmt->execute($infos['valuesInsert']);
+			$this->lastInsert = $stmt->fetch(\PDO::FETCH_ASSOC);
+			return true;
+		} catch (\Exception $e) {
+			\Sentry\captureException($e);
+			return false;
+		}
 	}
 
 	/**

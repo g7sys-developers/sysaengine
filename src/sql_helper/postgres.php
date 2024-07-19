@@ -124,6 +124,28 @@ abstract class postgres
 			index_name";
 
 	/**
+	 * Sql to get the name of primary key
+	 * @var				string
+	 */
+	private $sqlPkey = "
+		SELECT
+				c.conname AS constraint_name,
+				a.attname AS column_name
+		FROM
+				pg_constraint c
+		JOIN
+				pg_class t ON c.conrelid = t.oid
+		JOIN
+				pg_namespace n ON t.relnamespace = n.oid
+		JOIN
+				pg_attribute a ON a.attnum = ANY(c.conkey) AND a.attrelid = t.oid
+		WHERE
+				c.contype = 'p'
+				AND n.nspname = ?
+				AND t.relname = ?
+	";
+
+	/**
 	 * Object with database connection
 	 * @var				object
 	 */
@@ -171,6 +193,25 @@ abstract class postgres
 	}
 
 	/**
+	 * description Get the name of primary key
+	 * name        getPkeyName
+	 * access      public
+	 * author      Anderson Arruda < andmarruda@gmail.com >
+	 * param
+	 * return      string
+	 */
+	public function getPkeyName() : string
+	{
+		$stmt = $this->conn->prepare($this->sqlPkey. ' LIMIT 1');
+		$stmt->execute([$this->schema, $this->relname]);
+		if($stmt->rowCount() == 0)
+			return '';
+
+		$data = $stmt->fetch(PDO::FETCH_ASSOC);
+		return $data['constraint_name'];
+	}
+
+	/**
 	 * description		Pega informações do objeto do banco de dados "table, view, materialized view ou function"
 	 * name				getObjectInfo
 	 * access			public
@@ -180,7 +221,7 @@ abstract class postgres
 	 */
 	protected function getObjectInfo() : bool
 	{
-		$stmt = $this->conn->prepare($this->classObject. ' SELECT * FROM pg_object_class WHERE (schema, class) = (?, ?)');
+		$stmt = $this->conn->prepare($this->classObject. 'SELECT * FROM pg_object_class WHERE (schema, class) = (?, ?)');
 		$stmt->execute([$this->schema, $this->relname]);
 		if($stmt->rowCount() > 0)
 		{
@@ -209,7 +250,7 @@ abstract class postgres
 			{
 				$this->cols[$attr['coluna']] = [
 					'type' 				=> $attr['tipo'],
-					'notnull'			=> !empty($attr['attrnotnull']) && $row['attnotnull'] == 1,
+					'notnull'			=> !empty($attr['attrnotnull']) && $attr['attnotnull'] == 1,
 					'typcategory'		=> $attr['typcategory'],
 					'default'			=> empty($attr['column_default']) && $attr['column_default'] != 0 ? NULL : $attr['column_default'],
 					'parameter_mode'	=> $attr['parameter_mode'] ?? NULL,
@@ -250,7 +291,7 @@ abstract class postgres
 	 */
 	public function objectInfo(string $schema, string $relname) : ?string
 	{
-
+		return null;
 	}
 }
 ?>

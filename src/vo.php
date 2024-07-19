@@ -98,5 +98,32 @@ class vo extends postgres{
 		$this->cols[$name]['value'] = $value;
 		$this->cols[$name]['setted_in_save'] = true;
 	}
+
+	/**
+	 * Retorna uma array com os valores necessarios para enviar ao save
+	 * 
+	 * @access public
+	 * @version 1.0.0
+	 * @return array
+	 */
+	public function saveInfo() : array
+	{
+		$ret = [];
+		foreach ($this->cols as $colname => $col)
+		{
+			if ($col['setted_in_save'] || ($col['notnull'] && !is_null($col['default'])))
+			{
+				$ret['cols'][] = $colname;
+				$ret['updateCols'] = "$colname = EXCLUDED.$colname, ";
+				$ret['valuesInsert'][] = $col['value'];
+			}
+		}
+
+		$ret['values'] = rtrim(str_repeat('?, ', count($ret['cols'])), ', ');
+		$ret['cols'] = implode(', ', $ret['cols']);
+		$ret['updateCols'] = rtrim($ret['updateCols'], ', ');
+
+		return $ret;
+	}
 }
 ?>
