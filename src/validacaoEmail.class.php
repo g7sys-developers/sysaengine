@@ -194,7 +194,7 @@ class validacaoEmail{
             'email' => $dados['email'],
             'mensagem_token_expirado' => $dados['mensagem_token_expirado'],
             'codemp' => $dados['codemp'],
-            'url_validacao' => 'https://ws.sysadmcom.com.br/validarEmail.php?token='. $dados['validacao_token']. '&email='. $dados['email']. '&id='. $dados['id_validacao_email']. ((!$producao) ? '&f=0' : ''),
+            'url_validacao' => sysa::getUrlBase(). '/validarEmail.php?token='. $dados['validacao_token']. '&email='. $dados['email']. '&id='. $dados['id_validacao_email']. ((!$producao) ? '&f=0' : ''),
             'validade_token_br' => $dados['validade_token_br'],
             'validade_token' => $dados['validade_token'],
             'token' => $dados['validacao_token'],
