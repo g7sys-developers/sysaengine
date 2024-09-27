@@ -162,6 +162,16 @@ final class sysa{
     }
 
     /**
+     * Get kingsms token
+     * 
+     * @return string
+     */
+    public static function getKingsmsToken() : string
+    {
+        return self::$config['kingsms_token'];
+    }
+
+    /**
      * Generated static call to set values a single time
      * 
      * @param string $name

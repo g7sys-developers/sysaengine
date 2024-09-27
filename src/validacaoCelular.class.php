@@ -28,16 +28,10 @@ class validacaoCelular{
     const URL_KINGSMS = 'http://painel.kingsms.com.br/kingsms/api.php';
 
     /**
-     * TOKEN da kingsms
-     * @var             string
-     */
-    private $kingsms_token = '9b6415d8af4cedacdf7b5382ab656262';
-
-    /**
      * Username da kingsms
      * @var             string
      */
-    private $kingsms_login = 'mcadmti';
+    private $kingsms_login = 'g7bankpay';
 
     /**
      * Flag se o email foi validado com sucesso
@@ -98,9 +92,10 @@ class validacaoCelular{
      */
     public function saldoKingSms() : array
     {
-        $get = ['acao' => 'saldo', 'login' => $this->kingsms_login, 'token' => $this->kingsms_token];
+        $get = ['acao' => 'saldo', 'login' => $this->kingsms_login, 'token' => sysa::getKingsmsToken()];
         $arr = $this->execCurl(self::URL_KINGSMS, $get, false);
-        $this->dbconn->execute('INSERT INTO documentacao.saldo_kingsms(login, token_sms, status, cause) VALUES(?, ?, ?, ?) ON CONFLICT ON CONSTRAINT saldo_kingsms_ukey DO UPDATE SET status=EXCLUDED.status, cause=EXCLUDED.cause', [$this->kingsms_login, $this->kingsms_token, $arr['status'], $arr['cause']]);
+        $stmt = $this->dbconn->prepare('INSERT INTO documentacao.saldo_kingsms(login, token_sms, status, cause) VALUES(?, ?, ?, ?) ON CONFLICT ON CONSTRAINT saldo_kingsms_ukey DO UPDATE SET status=EXCLUDED.status, cause=EXCLUDED.cause');
+        $stmt->execute([$this->kingsms_login, sysa::getKingsmsToken(), $arr['status'], $arr['cause']]);
         return $arr;
     }
 
@@ -133,11 +128,13 @@ class validacaoCelular{
         if(strlen($mensagem) > 160)
             return false;
 
-        $get = ['acao' => 'sendsms', 'login' => $this->kingsms_login, 'token' => $this->kingsms_token, 'numero' => $numeroCelular, 'msg' => $mensagem];
+        $get = ['acao' => 'sendsms', 'login' => $this->kingsms_login, 'token' => sysa::getKingsmsToken(), 'numero' => $numeroCelular, 'msg' => $mensagem];
         $ret = $this->execCurl(self::URL_KINGSMS, $get, false);
 
-        if(isset($id_validacao_por_celular))
-            $this->dbconn->execute('INSERT INTO documentacao.sms_validacao_celular(id_validacao_por_celular, status, cause, kingsms_id) VALUES(?, ?, ?, ?)', [$id_validacao_por_celular, $ret['status'], $ret['cause'], ($ret['id'] ?? '-1')]);
+        if(isset($id_validacao_por_celular)) {
+            $stmt = $this->dbconn->prepare('INSERT INTO documentacao.sms_validacao_celular(id_validacao_por_celular, status, cause, kingsms_id) VALUES(?, ?, ?, ?)');
+            $stmt->execute([$id_validacao_por_celular, $ret['status'], $ret['cause'], ($ret['id'] ?? '-1')]);
+        }
         
         $this->saldoKingSms();
 
@@ -152,9 +149,9 @@ class validacaoCelular{
      * param            ?string $dbname=NULL
      * return           void
      */
-    public function __construct(?string $dbname=NULL)
+    public function __construct()
     {
-        $this->dbconn = sysa::cakeConn($dbname);
+        $this->dbconn = conn::get_conn();
     }
 
     /**
@@ -167,7 +164,8 @@ class validacaoCelular{
      */
     public function celularValidado(int $id_validacao_por_celular) : bool
     {
-        $stmt = $this->dbconn->execute('SELECT * FROM documentacao.validacao_por_celular WHERE id_validacao_por_celular=? AND celular_verificado', [$id_validacao_por_celular]);
+        $stmt = $this->dbconn->prepare('SELECT * FROM documentacao.validacao_por_celular WHERE id_validacao_por_celular=? AND celular_verificado');
+        $stmt->execute([$id_validacao_por_celular]);
         return $stmt->rowCount();
     }
 
@@ -181,7 +179,8 @@ class validacaoCelular{
      */
     public function celularExpirado(int $id_validacao_por_celular) : bool
     {
-        $stmt = $this->dbconn->execute('SELECT * FROM documentacao.validacao_por_celular WHERE id_validacao_por_celular=? AND NOT celular_verificado AND NOW()>validade_token', [$id_validacao_por_celular]);
+        $stmt = $this->dbconn->prepare('SELECT * FROM documentacao.validacao_por_celular WHERE id_validacao_por_celular=? AND NOT celular_verificado AND NOW()>validade_token');
+        $stmt->execute([$id_validacao_por_celular]);
         return $stmt->rowCount();
     }
 
@@ -195,7 +194,8 @@ class validacaoCelular{
      */
     public function deletaCel(int $id_validacao_por_celular) : bool
     {
-        $stmt = $this->dbconn->execute('DELETE FROM documentacao.validacao_por_celular WHERE id_validacao_por_celular=? AND NOT celular_verificado AND NOW()>validade_token RETURNING *', [$id_validacao_por_celular]);
+        $stmt = $this->dbconn->prepare('DELETE FROM documentacao.validacao_por_celular WHERE id_validacao_por_celular=? AND NOT celular_verificado AND NOW()>validade_token RETURNING *');
+        $stmt->execute([$id_validacao_por_celular]);
         return $stmt->rowCount();
     }
 
@@ -211,7 +211,8 @@ class validacaoCelular{
     {
         $this->flagCelularValidado=false;
         $cel = preg_replace('/[^0-9]{1,}/', '', $celular);
-        $stmt = $this->dbconn->execute('SELECT *, NOW()>validade_token AS token_expirado FROM documentacao.validacao_por_celular WHERE id_validacao_por_celular=? AND celular=? AND token_enviado=?', [$id_validacao_por_celular, $cel, $token]);
+        $stmt = $this->dbconn->prepare('SELECT *, NOW()>validade_token AS token_expirado FROM documentacao.validacao_por_celular WHERE id_validacao_por_celular=? AND celular=? AND token_enviado=?');
+        $stmt->execute([$id_validacao_por_celular, $cel, $token]);
         if($stmt->rowCount()==0){
             $this->flagCelularValidado=false;
             return 'O número '. $celular. ' não foi encontrado para ser validado';
@@ -223,7 +224,8 @@ class validacaoCelular{
             return 'O token para o número '. $celular. ' já expirou. Tente novamente.';
         }
 
-        $stmt = $this->dbconn->execute('UPDATE documentacao.validacao_por_celular SET celular_verificado=true, ip_verificacao=?, user_agent_verificacao=?, data_verificacao=NOW() WHERE id_validacao_por_celular=? AND celular=? AND token_enviado=? RETURNING *', [$_SERVER['REMOTE_ADDR'], $_SERVER['HTTP_USER_AGENT'], $id_validacao_por_celular, $cel, $token]);
+        $stmt = $this->dbconn->prepare('UPDATE documentacao.validacao_por_celular SET celular_verificado=true, ip_verificacao=?, user_agent_verificacao=?, data_verificacao=NOW() WHERE id_validacao_por_celular=? AND celular=? AND token_enviado=? RETURNING *');
+        $stmt->execute([$_SERVER['REMOTE_ADDR'], $_SERVER['HTTP_USER_AGENT'], $id_validacao_por_celular, $cel, $token]);
         $this->flagCelularValidado=true;
         return 'O número de celular '. $celular. ' foi válidado com sucesso.';
     }
@@ -238,7 +240,8 @@ class validacaoCelular{
      */
     public function deletaRequisicao(int $id_validacao_por_celular) : bool
     {
-        $stmt = $this->dbconn->execute('DELETE FROM documentacao.validacao_por_celular WHERE id_validacao_por_celular=? RETURNING *', [$id_validacao_por_celular]);
+        $stmt = $this->dbconn->prepare('DELETE FROM documentacao.validacao_por_celular WHERE id_validacao_por_celular=? RETURNING *');
+        $stmt->execute([$id_validacao_por_celular]);
         return $stmt->rowCount();
     }
 
@@ -257,7 +260,8 @@ class validacaoCelular{
         $token = rand(100000, 999999);
         $cel = preg_replace('/[^0-9]{1,}/', '', $celular);
         $sql = 'INSERT INTO documentacao.validacao_por_celular(celular, token_enviado, validade_token, codemp, codigo_usuario, mensagem) VALUES(?, ?, (NOW() + (SELECT tempo_expira_token_celular FROM tabela110 WHERE codemp=?)), ?, ?, ?) RETURNING *, TO_CHAR(validade_token, \'DD/MM/YYYY HH24:MI:SS\') AS validade_token_br';
-        $stmt = $this->dbconn->execute($sql, [$cel, $token, $codemp, $codemp, $codigo_usuario, $mensagem]);
+        $stmt = $this->dbconn->prepare($sql);
+        $stmt->execute([$cel, $token, $codemp, $codemp, $codigo_usuario, $mensagem]);
         if($stmt->rowCount() === 0)
             return -1;
 
