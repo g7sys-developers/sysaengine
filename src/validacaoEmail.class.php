@@ -14,10 +14,7 @@
 **/
 namespace sysaengine;
 
-require_once(__DIR__. '/../phpmailer/vendor/autoload.php');
 use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\SMTP;
-use PHPMailer\PHPMailer\Exception;
 
 class validacaoEmail{
     /**
@@ -259,33 +256,14 @@ class validacaoEmail{
         
         $row = $stmt->fetch(\PDO::FETCH_ASSOC);
         $de = $this->dadosEmail();
-        preg_match('/^.*(?=@)/', $de['username'], $fromName);
         preg_match('/^.*(?=@)/', $email, $toName);
 
         $titulo_email = utf8_decode($this->layoutMensagem($titulo_email, $row, ($this->dbname ?? $_SESSION['sysadmcom']['dbname'])=='ribeiraogg'));
         $mensagem = utf8_decode($this->layoutMensagem($mensagem, $row, ($this->dbname ?? $_SESSION['sysadmcom']['dbname'])=='ribeiraogg'));
 
-        $mail = new PHPMailer(true);
-        try {
-            //$mail->SMTPDebug = SMTP::DEBUG_SERVER;
-            $mail->isSMTP();
-            $mail->Host       = $de['host'];
-            $mail->SMTPAuth   = true;
-            $mail->Username   = $de['username'];
-            $mail->Password   = $de['password_email'];
-            $mail->SMTPSecure = $de['smtp_secure'];
-            $mail->Port       = $de['port'];
-            $mail->setFrom($de['username'], 'Sysadmcom');
-            $mail->addAddress($email, $toName[0]);
-            $mail->isHTML(true);
-            $mail->Subject = $titulo_email;
-            $mail->Body    = $mensagem;
-            $mail->AltBody = $mensagem;
-
-            $mail->send();
+        $sentEmail = sysa::sendMail($email, $titulo_email, $mensagem);
+        if ($sentEmail) {
             return $row['id_validacao_email'];
-        } catch (\Exception $e) {
-            echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
         }
 
         return -1;

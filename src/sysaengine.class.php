@@ -14,6 +14,7 @@
 **/
 namespace sysaengine;
 use \Exception;
+use PHPMailer\PHPMailer\PHPMailer;
 
 final class sysa{
     /**
@@ -28,7 +29,15 @@ final class sysa{
         'user'      => NULL,
         'pass'      => NULL,
         'logPath'   => NULL,
-        'logName'   => NULL
+        'logName'   => NULL,
+        'smtp_host' => NULL,
+        'smtp_port' => NULL,
+        'smtp_user' => NULL,
+        'smtp_pass' => NULL,
+        'smtp_from' => NULL,
+        'smtp_from_name' => NULL,
+        'smtp_secure' => NULL,
+        'kingsms_token' => NULL,
     ];
 
     /**
@@ -210,6 +219,43 @@ final class sysa{
     {
         if($obj instanceof \PDOStatement)
             return new parser($obj);
+
+        return false;
+    }
+
+    /**
+     * Envia email
+     * 
+     * @param string $to
+     * @param string $subject
+     * @param string $body
+     * @return bool
+     */
+    public static function sendMail(string $to, string $subject, string $body) : bool
+    {
+        $mail = new PHPMailer(true);
+        preg_match('/^.*(?=@)/', $to, $toName);
+        try {
+            //$mail->SMTPDebug = SMTP::DEBUG_SERVER;
+            $mail->isSMTP();
+            $mail->Host       = self::$config['smtp_host'];
+            $mail->SMTPAuth   = true;
+            $mail->Username   = self::$config['smtp_user'];
+            $mail->Password   = self::$config['smtp_pass'];
+            $mail->SMTPSecure = self::$config['smtp_secure'];
+            $mail->Port       = self::$config['smtp_port'];
+            $mail->setFrom(self::$config['smtp_from'], self::$config['smtp_from_name']);
+            $mail->addAddress($to, $toName[0]);
+            $mail->isHTML(true);
+            $mail->Subject = $subject;
+            $mail->Body    = $body;
+            $mail->AltBody = $body;
+
+            $mail->send();
+            return true;
+        } catch (\Exception $e) {
+            echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
+        }
 
         return false;
     }
