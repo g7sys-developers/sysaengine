@@ -40,9 +40,9 @@ class validacaoEmail{
     protected $flagEmailValidado = false;
 
     /**
-     * DBname do banco de dados
+     * Flag se o ambiente é de produção
      */
-    protected $dbname;
+    protected $isProduction = false;
 
     /**
      * description      Retorna o status do email validdo
@@ -55,23 +55,6 @@ class validacaoEmail{
     public function getFlagEmailValidado() : bool
     {
         return $this->flagEmailValidado;
-    }
-
-    /**
-     * description      Pega as informações do email para serem utilizadas
-     * access           private
-     * version          1.0.0
-     * author           Anderson Arruda < andmarruda@gmail.com >
-     * param            
-     * return           array
-     */
-    private function dadosEmail() : array
-    {
-        $stmt = $this->dbconn->execute('SELECT * FROM development.cadastro_email WHERE id_email=?', [self::EMAIL_ID]);
-        if($stmt->rowCount() == 0)
-            return [];
-        
-        return $stmt->fetch(\PDO::FETCH_ASSOC);
     }
 
     /**
@@ -92,13 +75,12 @@ class validacaoEmail{
      * access           public
      * version          1.0.0
      * author           Anderson Arruda < andmarruda@gmail.com >
-     * param            ?string $dbname=NULL
      * return           void
      */
-    public function __construct(?string $dbname=NULL)
+    public function __construct()
     {
-        $this->dbname = $dbname;
-        $this->dbconn = sysa::cakeConn($dbname);
+        $this->isProduction = false;
+        $this->dbconn = conn::get_conn();
     }
 
     /**
@@ -114,7 +96,8 @@ class validacaoEmail{
     public function validarEmail(string $token, string $email, int $id, bool $producao) : string
     {
         $this->flagEmailValidado = false;
-        $stmt = $this->dbconn->execute('SELECT *, validade_token > NOW() AS valido, TO_CHAR(validade_token, \'DD/MM/YYYY HH24:MI:SS\') AS validade_token_br FROM documentacao.validacao_por_email WHERE id_validacao_email=? AND validacao_token=? AND email=?', [$id, $token, $email]);
+        $stmt = $this->dbconn->prepare('SELECT *, validade_token > NOW() AS valido, TO_CHAR(validade_token, \'DD/MM/YYYY HH24:MI:SS\') AS validade_token_br FROM documentacao.validacao_por_email WHERE id_validacao_email=? AND validacao_token=? AND email=?');
+        $stmt->execute([$id, $token, $email]);
         if($stmt->rowCount() == 0)
             return 'Não foi possível encontrar o email para validar. Verifique a URL digitada caso o erro persista peça um novo convite.';
 
@@ -124,7 +107,8 @@ class validacaoEmail{
         if(!$row['valido'])
             return $mensagem_token_expirado;
 
-        $this->dbconn->execute('UPDATE documentacao.validacao_por_email SET email_verificado=true, validado_em=NOW(), ip_validacao=?, user_agent_validacao=? WHERE id_validacao_email=? AND validacao_token=? AND email=?', [$_SERVER['REMOTE_ADDR'], $_SERVER['HTTP_USER_AGENT'], $id, $token, $email]);
+        $updateStmt = $this->dbconn->prepare('UPDATE documentacao.validacao_por_email SET email_verificado=true, validado_em=NOW(), ip_validacao=?, user_agent_validacao=? WHERE id_validacao_email=? AND validacao_token=? AND email=?');
+        $updateStmt->execute([$_SERVER['REMOTE_ADDR'], $_SERVER['HTTP_USER_AGENT'], $id, $token, $email]);
         $this->flagEmailValidado = true;
         return $mensagem_sucesso;
     }
@@ -139,7 +123,8 @@ class validacaoEmail{
      */
     public function emailValidado(int $id) : bool
     {
-        $stmt = $this->dbconn->execute('SELECT * FROM documentacao.validacao_por_email WHERE id_validacao_email=?', [$id]);
+        $stmt = $this->dbconn->prepare('SELECT * FROM documentacao.validacao_por_email WHERE id_validacao_email=?');
+        $stmt->execute([$id]);
         if($stmt->rowCount() == 0)
             return false;
         
@@ -157,7 +142,8 @@ class validacaoEmail{
      */
     public function tokenExpirado(int $id) : bool
     {
-        $stmt = $this->dbconn->execute('SELECT *, validade_token > NOW() AS valido FROM documentacao.validacao_por_email WHERE id_validacao_email=?', [$id]);
+        $stmt = $this->dbconn->prepare('SELECT *, validade_token > NOW() AS valido FROM documentacao.validacao_por_email WHERE id_validacao_email=?');
+        $stmt->execute([$id]);
         if($stmt->rowCount() == 0)
             return true;
         
@@ -175,7 +161,8 @@ class validacaoEmail{
      */
     public function deletaTokenExpirado(int $id) : bool
     {
-        $stmt = $this->dbconn->execute('DELETE FROM documentacao.validacao_por_email WHERE id_validacao_email=? AND NOT email_verificado AND NOW() > validade_token RETURNING *', [$id]);
+        $stmt = $this->dbconn->prepare('DELETE FROM documentacao.validacao_por_email WHERE id_validacao_email=? AND NOT email_verificado AND NOW() > validade_token RETURNING *');
+        $stmt->execute([$id]);
         if($stmt->rowCount() == 0)
             return false;
 
@@ -195,7 +182,8 @@ class validacaoEmail{
     public function layoutMensagem(string $mensagem, $dados, bool $producao) : string
     {
         if(is_int($dados) || (!is_array($dados) && preg_match('/^[0-9]{1,}$/', $dados) > -1)){
-            $stmt = $this->dbconn->execute('SELECT *, TO_CHAR(validade_token, \'DD/MM/YYYY HH24:MI:SS\') AS validade_token_br FROM documentacao.validacao_por_email WHERE id_validacao_email=?', [$dados]);
+            $stmt = $this->dbconn->prepare('SELECT *, TO_CHAR(validade_token, \'DD/MM/YYYY HH24:MI:SS\') AS validade_token_br FROM documentacao.validacao_por_email WHERE id_validacao_email=?');
+            $stmt->execute([$dados]);
             if($stmt->rowCount()===0)
                 return $mensagem;
 
@@ -227,7 +215,8 @@ class validacaoEmail{
      */
     public function deletaValidacao(int $id) : bool
     {
-        $stmt = $this->dbconn->execute('DELETE FROM documentacao.validacao_por_email WHERE id_validacao_email=? RETURNING *', [$id]);
+        $stmt = $this->dbconn->prepare('DELETE FROM documentacao.validacao_por_email WHERE id_validacao_email=? RETURNING *');
+        $stmt->execute([$id]);
         return $stmt->rowCount();
     }
 
@@ -243,23 +232,22 @@ class validacaoEmail{
      * param 			int $mensagem_token_expirado
      * param 			int $codemp
      * param 			int $mensagem_sucesso
-     * param            ?string $dbname=NULL
 	 * return 			int
 	 */
     public function requerer(string $titulo_email, string $mensagem, string $email, int $codigo_usuario, string $mensagem_token_expirado, int $codemp, string $mensagem_sucesso) : int
     {
         $sql = 'INSERT INTO documentacao.validacao_por_email(titulo_email, mensagem, email, validacao_token, validade_token, email_verificado, codigo_usuario, mensagem_token_expirado, codemp, mensagem_sucesso) VALUES(?, ?, ?, ?, NOW()+(SELECT tempo_expira_token_email FROM tabela110 WHERE codemp=?), false, ?, ?, ?, ?) RETURNING *, TO_CHAR(validade_token, \'DD/MM/YYYY HH24:MI:SS\') AS validade_token_br';
         $token = $this->geraToken();
-        $stmt = $this->dbconn->execute($sql, [$titulo_email, $mensagem, $email, $token, $codemp, $codigo_usuario, $mensagem_token_expirado, $codemp, $mensagem_sucesso]);
+        $stmt = $this->dbconn->prepare($sql);
+        $stmt->execute([$titulo_email, $mensagem, $email, $token, $codemp, $codigo_usuario, $mensagem_token_expirado, $codemp, $mensagem_sucesso]);
         if($stmt->rowCount() == 0)
             return -1;
         
         $row = $stmt->fetch(\PDO::FETCH_ASSOC);
-        $de = $this->dadosEmail();
         preg_match('/^.*(?=@)/', $email, $toName);
 
-        $titulo_email = utf8_decode($this->layoutMensagem($titulo_email, $row, ($this->dbname ?? $_SESSION['sysadmcom']['dbname'])=='ribeiraogg'));
-        $mensagem = utf8_decode($this->layoutMensagem($mensagem, $row, ($this->dbname ?? $_SESSION['sysadmcom']['dbname'])=='ribeiraogg'));
+        $titulo_email = utf8_decode($this->layoutMensagem($titulo_email, $row, $this->isProduction));
+        $mensagem = utf8_decode($this->layoutMensagem($mensagem, $row, $this->isProduction));
 
         $sentEmail = sysa::sendMail($email, $titulo_email, $mensagem);
         if ($sentEmail) {
