@@ -246,8 +246,8 @@ class validacaoEmail{
         $row = $stmt->fetch(\PDO::FETCH_ASSOC);
         preg_match('/^.*(?=@)/', $email, $toName);
 
-        $titulo_email = utf8_decode($this->layoutMensagem($titulo_email, $row, $this->isProduction));
-        $mensagem = utf8_decode($this->layoutMensagem($mensagem, $row, $this->isProduction));
+        $titulo_email = $this->layoutMensagem($titulo_email, $row, $this->isProduction);
+        $mensagem = $this->layoutMensagem($mensagem, $row, $this->isProduction);
 
         $sentEmail = sysa::sendMail($email, $titulo_email, $mensagem);
         if ($sentEmail) {
