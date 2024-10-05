@@ -26,13 +26,12 @@ class vo extends postgres{
 	 * param            string $table
 	 * return           void
 	 */
-    public function __construct(
+  public function __construct(
 		string $schema,
 		string $relname
-	)
-    {
+	) {
 		parent::__construct($schema, $relname);
-    }
+  }
 
 	/**
 	 * description 		Adicionado sistema intermediário para frvd_set antigo do DAO/VO 1.0
@@ -46,13 +45,24 @@ class vo extends postgres{
 	public function __call($name, $arguments)
 	{
 		$colname = preg_replace('/^(frvd_set_)|(fm_get_)/', '', $name);
-		if(preg_match('/^frvd_set_/', $name)){
+		if (preg_match('/^frvd_set_/', $name)) {
 			$this->$colname = $arguments[0];
 			$this->cols[$colname]['setted_in_save'] = $arguments[1] ?? true;
 		}
 		
-		if(preg_match('/^fm_get_/', $name))
+		if (preg_match('/^fm_get_/', $name))
 			return $this->$colname;
+
+		if ($name === 'many') {
+			if (!is_array ($arguments[0])) return;
+
+			foreach ($arguments[0] as $colname => $value) {
+				if (array_key_exists($colname, $this->cols)) {
+					$this->$colname = $value;
+					$this->cols[$colname]['setted_in_save'] = true;
+				}
+			}
+		}
 	}
 
 	/**
