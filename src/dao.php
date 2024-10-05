@@ -20,7 +20,7 @@ use sysaengine\parser;
 use sysaengine\xml;
 use \PDO;
 
-class dao extends vo{
+class dao extends vo {
 	use DaoCommon, DaoFunction;
 
 	/**
@@ -93,6 +93,26 @@ class dao extends vo{
 		$select = $this->select('count(*) as total', ...$arguments);
 		return $select[0]['total'] > 0;
 	}
+
+	/**
+	 * Count the number of results returned
+	 * 
+	 * @access public
+	 * @version 2.0.0
+	 * @param	array $arguments
+	 * @return	bool
+	 */
+	public function count(...$arguments) : bool
+	{
+		if($this->dbObjectInfo['type'] === 'FUNC')
+		{
+			throw new \Exception('This class has no implementation to deal with exists in function');
+		}
+
+		$select = $this->select('count(*) as total', ...$arguments);
+		return $select[0]['total'];
+	}
+
 
 	/**
 	 * Retorna html de combobox usando no DAO 1.0

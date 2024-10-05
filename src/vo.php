@@ -28,9 +28,14 @@ class vo extends postgres{
 	 */
   public function __construct(
 		string $schema,
-		string $relname
+		string $relname,
+		?array $many,
+		?bool $customIndex
 	) {
 		parent::__construct($schema, $relname);
+
+		if ($many) $this->many($many);
+		if ($customIndex) $this->customIndex();
   }
 
 	/**
