@@ -254,6 +254,7 @@ final class sysa{
             $mail->Password   = self::$config['smtp_pass'];
             $mail->SMTPSecure = self::$config['smtp_secure'];
             $mail->Port       = self::$config['smtp_port'];
+            $mail->CharSet = 'UTF-8';
             $mail->setFrom(self::$config['smtp_from'], self::$config['smtp_from_name']);
             $mail->addAddress($to, $toName[0]);
             $mail->isHTML(true);
