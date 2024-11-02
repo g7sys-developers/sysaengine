@@ -46,11 +46,12 @@ class dao extends vo {
 	 * @version 1.0.0
 	 * @author Anderson Arruda < andmarruda@gmail.com >
 	 * @param 
-	 * @return void
+	 * @return dao
 	 */
-	public function customIndex() : void
+	public function customIndex() : dao
 	{
 		$this->useIndex = false;
+		return $this;
 	}
 
 	/**
