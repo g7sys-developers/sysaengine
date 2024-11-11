@@ -39,5 +39,17 @@ class ResponseFacade
         $response = new Response('php://temp', $status, array_merge(['Location' => $url], $headers));
         return $response;
     }
+
+    public static function toast(string $message, string $type = 'success', int $status = 200): Response
+    {
+        $json = [
+            'toast' => [
+                'message' => $message,
+                'type' => $type
+            ]
+        ];
+
+        return self::json($json, $status);
+    }
 }
  
