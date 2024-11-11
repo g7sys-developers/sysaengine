@@ -36,6 +36,12 @@ class dao extends vo {
 	protected $saveSql = 'INSERT INTO %s.%s (%s) VALUES (%s) ON CONFLICT ON CONSTRAINT %s DO UPDATE SET %s RETURNING *';
 
 	/**
+	 * Insert SQL
+	 * @var string
+	 */
+	protected $insertSql = 'INSERT INTO %s.%s (%s) VALUES (%s) ON CONFLICT ON CONSTRAINT %s DO NOTHING RETURNING *';
+
+	/**
 	 * Armazena os valores do ultimo insert
 	 * @var array
 	 */
@@ -160,15 +166,52 @@ class dao extends vo {
 	}
 
 	/**
+	 * Insert data in selected table
+	 * 
+	 * @access 		public
+	 * @version 	2.0.0
+	 * @param
+	 * @return		PDOStatement | bool
+	 */
+	public function insert(): \PDOStatement | bool
+	{
+		if($this->dbObjectInfo['type'] !== 'r')
+		{
+			throw new \Exception("Is not possible to save data in function, materialized view or view using this class.");
+		}
+
+		try {
+			$infos = $this->saveInfo();
+			$sql = sprintf(
+				$this->insertSql,
+				$this->schema,
+				$this->relname,
+				$infos['cols'],
+				$infos['values'],
+				$this->getPkeyName()
+			);
+
+			$this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+			$stmt = $this->conn->prepare($sql);
+			$stmt->execute($infos['valuesInsert']);
+			$this->lastInsert = $stmt->fetch(\PDO::FETCH_ASSOC);
+			return $stmt;
+		} catch (\Exception $e) {
+			\Sentry\captureException($e);
+			return false;
+		}
+	}
+
+	/**
 	 * Save data in selected table
 	 * 
-	 * @access public
-	 * @version 2.0.0
-	 * @author Anderson Arruda < andmarruda@gmail.com >
+	 * @access 		public
+	 * @version 	2.0.0
+	 * @author 		Anderson Arruda < andmarruda@gmail.com >
 	 * @param
-	 * @return		return boolean
+	 * @return 		boolean
 	 */
-	public function save() : bool
+	public function save(): bool
 	{
 		if($this->dbObjectInfo['type'] !== 'r')
 		{
