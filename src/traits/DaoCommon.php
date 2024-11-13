@@ -42,7 +42,7 @@
          */
         public function selectCommon(string $fields='*', string $where='', string $orderBy='', string $groupBy='') : array
         {
-            $stmt = $this->selectStatement(...func_get_args());
+            $stmt = $this->selectStatementCommon(...func_get_args());
             $results = [0 => ['none' => 'Nenhum resultado encontrado!']];
 
             if($stmt->rowCount() > 0)
@@ -63,7 +63,7 @@
          * @param
          * @return PDOStatement
          */
-        public function selectStatement(string $fields='*', string $where='', string $orderBy='', string $groupBy='') : PDOStatement
+        public function selectStatementCommon(string $fields='*', string $where='', string $orderBy='', string $groupBy='') : PDOStatement
         {
             $sql = sprintf($this->commonSql, $fields, $this->schema.'.'.$this->relname);
 
@@ -85,4 +85,3 @@
             return $stmt;
         }
     }
-?>

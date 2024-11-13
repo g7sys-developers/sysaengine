@@ -25,7 +25,7 @@ abstract class postgres
 	 */
 	private $classObject = 'WITH pg_object_class AS(
 		SELECT
-			pn.nspname AS schema, pc.relname AS class, pc.relkind::varchar AS type
+			pn.nspname AS schema, pc.relname AS class, pc.relkind::varchar AS type, \'\' AS return_type
 		FROM
 			pg_class pc 
 			JOIN pg_namespace pn ON pn.oid=pc.relnamespace
@@ -35,7 +35,7 @@ abstract class postgres
 		UNION
 
 		SELECT 
-			r.specific_schema AS schema, r.routine_name AS class, \'FUNC\'::varchar AS type
+			r.specific_schema AS schema, r.routine_name AS class, \'FUNC\'::varchar AS type, r.data_type AS return_type
 		FROM
 			information_schema.routines AS r
 		WHERE
@@ -91,13 +91,13 @@ abstract class postgres
 		'FUNC'	=> 'SELECT
 						r.specific_schema AS table_schema, r.routine_name AS table_name, p.ordinal_position, p.parameter_name AS coluna,
 						p.data_type, p.udt_name, t.typname AS tipo, t.typcategory,
-						p.parameter_mode, 1 as attnotnull, \'\' as column_default
+						UPPER(p.parameter_mode) AS parameter_mode, 1 as attnotnull, \'\' as column_default
 					FROM 
 						information_schema.routines AS r
-						JOIN information_schema.parameters AS p ON r.specific_name=p.specific_name
+						JOIN information_schema.parameters AS p USING(specific_name, specific_schema)
 						JOIN pg_type AS t ON t.typname=p.udt_name
 					WHERE 
-						NOT r.specific_schema NOT IN(\'pg_catalog\', \'information_schema\')
+						NOT r.specific_schema IN (\'pg_catalog\', \'information_schema\')
 						AND r.routine_schema=? AND r.routine_name=?
 					ORDER BY 
 						p.ordinal_position'
@@ -279,19 +279,4 @@ abstract class postgres
 		$data = $stmt->fetch(PDO::FETCH_ASSOC);
 		return explode(',', $data['index_columns']);
 	}
-
-	/**
-	 * description 		Verify if object exists in database and returns his relkind
-	 * name				objectInfo
-	 * access			public
-	 * author 			Anderson Arruda < anderson@sysborg.com.br >
-	 * param			string $schema
-	 * param			string $relname
-	 * return			null | string
-	 */
-	public function objectInfo(string $schema, string $relname) : ?string
-	{
-		return null;
-	}
 }
-?>

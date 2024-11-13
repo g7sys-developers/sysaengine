@@ -71,15 +71,27 @@ class dao extends vo {
 	 */
 	public function select(...$arguments) : array
 	{
-		if($this->dbObjectInfo['type'] !== 'r' && $this->useIndex)
-			throw new \Exception('This class has no implementation to deal with index where for view or materialized view');
-
 		if($this->dbObjectInfo['type'] === 'FUNC')
 		{
 			return $this->selectFunction(...$arguments);
 		}
 
 		return $this->selectCommon(...$arguments);
+	}
+
+	/**
+	 * Return stmt of the query
+	 * 
+	 * @param array $arguments
+	 * @return PDOStatement
+	 */
+	public function selectStatement(...$arguments): \PDOStatement
+	{
+		if ($this->dbObjectInfo['type'] === 'FUNC') {
+			return $this->selectStatementFunc(...$arguments);
+		}
+
+		return $this->selectStatementCommon(...$arguments);
 	}
 
 	/**
@@ -280,4 +292,3 @@ class dao extends vo {
 		xml::searchEngineToXmlAll($rows[0], $formId);
 	}
 }
-?>
