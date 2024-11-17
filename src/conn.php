@@ -148,6 +148,10 @@ final class conn{
                 $attrs = isset($attrs) ? array_merge(self::$attrs, $attrs) : self::$attrs;
                 self::$pdo = new PDO(self::dsn(), $user, $pass, $attrs);
 
+                $timezone = 'America/Sao_Paulo';
+                self::$pdo->exec("SET TIMEZONE TO '{$timezone}'");
+
+                date_default_timezone_set('America/Sao_Paulo');
                 if(self::$debugMode) self::$pdo->setAttribute(PDO::ATTR_EMULATE_PREPARES, true);
             }
 
@@ -156,7 +160,6 @@ final class conn{
         {
             var_dump($e); die;
         }
-        
     }
 
     /**
