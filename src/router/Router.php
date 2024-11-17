@@ -7,35 +7,39 @@
   class Router {
     private static $routes = [];
 
-    public static function get(string $route, array $controller) : void
+    public static function get(string $route, array $controller, array $middlewares=[]) : void
     {
       self::$routes[$route] = [
         'method' => 'get',
-        'controller' => $controller
+        'controller' => $controller,
+        'middlewares' => $middlewares
       ];
     }
 
-    public static function post(string $route, array $controller) : void
+    public static function post(string $route, array $controller, array $middlewares=[]) : void
     {
       self::$routes[$route] = [
         'method' => 'post',
-        'controller' => $controller
+        'controller' => $controller,
+        'middlewares' => $middlewares
       ];
     }
 
-    public static function delete(string $route, array $controller) : void
+    public static function delete(string $route, array $controller, array $middlewares=[]) : void
     {
       self::$routes[$route] = [
         'method' => 'delete',
-        'controller' => $controller
+        'controller' => $controller,
+        'middlewares' => $middlewares
       ];
     }
 
-    public static function put(string $route, array $controller) : void
+    public static function put(string $route, array $controller, array $middlewares=[]) : void
     {
       self::$routes[$route] = [
         'method' => 'put',
-        'controller' => $controller
+        'controller' => $controller,
+        'middlewares' => $middlewares
       ];
     }
 
@@ -61,10 +65,20 @@
         $_FILES
       );
 
-      $controller = self::$routes[$route]['controller'][0];
-      $action = self::$routes[$route]['controller'][1];
+      $routeInfo = self::$routes[$route];
+      $middlewares = $routeInfo['middlewares'];
 
-      $controller = new $controller;
+      foreach ($middlewares as $middleware) {
+        $response = $middleware($request);
+        if ($response instanceof ResponseInterface) {
+            http_response_code($response->getStatusCode());
+            echo $response->getBody();
+            return;
+        }
+      }
+
+      $controller = new $routeInfo['controller'][0];
+      $action = $routeInfo['controller'][1];
       $controller->$action($request);
     }
   }
