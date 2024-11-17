@@ -70,7 +70,7 @@
 
       foreach ($middlewares as $middleware) {
         $response = $middleware($request);
-        if ($response instanceof ResponseInterface) {
+        if ($response instanceof ResponseFacade) {
             http_response_code($response->getStatusCode());
             echo $response->getBody();
             return;
