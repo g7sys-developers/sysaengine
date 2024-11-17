@@ -72,6 +72,13 @@
         $response = $middleware($request);
         if ($response instanceof \Laminas\Diactoros\Response) {
             http_response_code($response->getStatusCode());
+            
+            foreach ($response->getHeaders() as $name => $values) {
+              foreach ($values as $value) {
+                  header(sprintf('%s: %s', $name, $value), false);
+              }
+            }
+
             echo $response->getBody();
             return;
         }
