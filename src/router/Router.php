@@ -70,7 +70,7 @@
 
       foreach ($middlewares as $middleware) {
         $response = $middleware($request);
-        if ($response instanceof ResponseFacade) {
+        if ($response instanceof \Laminas\Diactoros\Response) {
             http_response_code($response->getStatusCode());
             echo $response->getBody();
             return;
