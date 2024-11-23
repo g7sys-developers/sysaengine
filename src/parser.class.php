@@ -133,7 +133,7 @@ private $statement;
 
             public function samePage(): string
             {
-                $html = '
+                return '
                     <script type="application/json" id="json-'. sysa::uuid() .'">'. json_encode($this->arr). '</script>
                     <script>
                         document.addEventListener("DOMContentLoaded", () => {
