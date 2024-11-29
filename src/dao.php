@@ -207,9 +207,11 @@ class dao extends vo {
 
 			$stmt = $this->conn->prepare($sql);
 			$stmt->execute([...$executedSetFields['binds'], ...$executedWhere['binds']]);
+			$this->useIndex = true;
 			return $stmt;	
 		} catch (\Exception $e) {
 			\Sentry\captureException($e);
+			$this->useIndex = true;
 			return false;
 		}
 	}
