@@ -40,12 +40,13 @@ class ResponseFacade
         return $response;
     }
 
-    public static function toast(string $message, string $type = 'success', int $status = 200)
+    public static function toast(string $message, string $type = 'success', int $status = 200, string $backtrace = '')
     {
         $json = [
             'toast' => [
                 'message' => $message,
-                'type' => $type
+                'type' => $type,
+                'backtrace' => $backtrace
             ]
         ];
 

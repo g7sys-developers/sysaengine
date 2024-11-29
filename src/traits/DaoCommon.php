@@ -7,6 +7,39 @@
 
     trait DaoCommon{
         /**
+         * Código base para todos os selects
+         * 
+         * @version 1.0.0
+         * @author Anderson Arruda < andmarruda@gmail.com >
+         * @param	string $fields
+         * @param	string $where
+         * @param	string $orderBy
+         * @param	string $groupBy
+         * @return	array
+         */
+        private function prepareSelectCommon(string $fields='*', string $where='', string $orderBy='', string $groupBy=''): array
+        {
+            $sql = sprintf($this->commonSql, $fields, $this->schema.'.'.$this->relname);
+
+            if($where != '')
+            {
+                $preparedWhere = $this->prepareWhere($where);
+                $sql .= " WHERE ". $preparedWhere['where'];
+            }
+
+            if($groupBy != '')
+                $sql .= " GROUP BY $groupBy";
+
+            if($orderBy != '')
+                $sql .= " ORDER BY $orderBy" ;
+
+            return [
+                'sql' => $sql,
+                'binds' => $preparedWhere['binds'] ?? []
+            ];
+        }
+
+        /**
          * Commont SQL
          * @var string
          */
@@ -65,23 +98,31 @@
          */
         public function selectStatementCommon(string $fields='*', string $where='', string $orderBy='', string $groupBy='') : PDOStatement
         {
-            $sql = sprintf($this->commonSql, $fields, $this->schema.'.'.$this->relname);
+            $preparedSql = $this->prepareSelectCommon(...func_get_args());
+            $stmt = $this->conn->prepare($preparedSql['sql']);
+            $stmt->execute($preparedSql['binds']);
+            return $stmt;
+        }
 
-            if($where != '')
-            {
-                $preparedWhere = $this->prepareWhere($where);
-                $sql .= " WHERE ". $preparedWhere['where'];
+        /**
+         * Transforma o comando select em um retorno do tipo SQL
+         * 
+         * @version 1.0.0
+         * @author Anderson Arruda < andmarruda@gmail.com >
+         * @param string $fields
+         * @param string $where
+         * @param string $orderBy
+         * @param string $groupBy
+         * @return string
+         */
+        public function selectToSql(string $fields='*', string $where='', string $orderBy='', string $groupBy=''): string
+        {
+            $preparedSql = $this->prepareSelectCommon(...func_get_args());
+            foreach ($preparedSql['binds'] as $bind) {
+                $value = is_string($bind) ? "'" . addslashes($bind) . "'" : $bind;
+                $preparedSql['sql'] = preg_replace('/\?/', $value, $preparedSql['sql'], 1);
             }
 
-            if($groupBy != '')
-                $sql .= " GROUP BY $groupBy";
-
-            if($orderBy != '')
-                $sql .= " ORDER BY $orderBy" ;
-
-            $stmt = $this->conn->prepare($sql);
-            $stmt->execute($preparedWhere['binds'] ?? []);
-
-            return $stmt;
+            return $preparedSql['sql'];
         }
     }
