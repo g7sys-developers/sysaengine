@@ -14,6 +14,7 @@
 **/
 namespace sysaengine;
 
+use sysaengine\sql_helper\whereInterpreter;
 use sysaengine\traits\DaoCommon;
 use sysaengine\traits\DaoFunction;
 use sysaengine\parser;
@@ -175,6 +176,42 @@ class dao extends vo {
 	public function getLastValuesInserted() : array
 	{
 		return $this->lastInsert;
+	}
+
+	/**
+	 * Update de dados
+	 * 
+	 * @access public
+	 * @version 2.0.0
+	 * @param
+	 * @return	PDOStatement | bool
+	 */
+	public function update(string $setFields, string $where): \PDOStatement | bool
+	{
+		if($this->dbObjectInfo['type'] !== 'r')
+		{
+			throw new \Exception("Is not possible to save data in function, materialized view or view using this class.");
+		}
+
+		try {
+			$sql = sprintf(
+				'UPDATE %s.%s SET %s WHERE %s RETURNING *',
+				$this->schema,
+				$this->relname,
+				$setFields,
+				$where
+			);
+
+			$executedSetFields = whereInterpreter::execute($setFields, $this->cols);
+			$executedWhere = whereInterpreter::execute($where, $this->cols);
+
+			$stmt = $this->conn->prepare($sql);
+			$stmt->execute([...$executedSetFields['binds'], ...$executedWhere['binds']]);
+			return $stmt;	
+		} catch (\Exception $e) {
+			\Sentry\captureException($e);
+			return false;
+		}
 	}
 
 	/**
