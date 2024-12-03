@@ -100,7 +100,12 @@
         {
             $preparedSql = $this->prepareSelectCommon(...func_get_args());
             $stmt = $this->conn->prepare($preparedSql['sql']);
-            $stmt->execute($preparedSql['binds']);
+            $executed = $stmt->execute($preparedSql['binds']);
+
+            if (!$executed) {
+                throw new \Exception("Erro ao executar a query: " . $stmt->errorInfo()[2]);
+            }
+
             return $stmt;
         }
 
