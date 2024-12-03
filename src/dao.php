@@ -330,4 +330,36 @@ class dao extends vo {
 		$rows = $this->selectCommon($fields, $where, $orderBy, $groupBy);
 		xml::searchEngineToXmlAll($rows[0], $formId);
 	}
+
+	/**
+	 * Retorna um combobox via json
+	 * 
+	 * @access public
+	 * @version 1.0.0
+	 * @param	string $fields
+	 * @param	string $where
+	 * @param string $id_combobox
+	 * @return void
+	 */
+	public function comboBox(string $fields, string $where): void
+	{
+		$rows = $this->select($fields, $where);
+		$combobox = [
+			'combobox' => []
+		];
+
+		foreach ($rows as $row) {
+			$v=array_values($value);
+			$val=(array_key_exists(0, $v)) ? $v[0] : '';
+			$text=(array_key_exists(0, $v)) ? $v[1] : '';
+
+			$combobox['combobox'][] = [
+				'value' => $val,
+				'text' => $text
+			];
+		}
+
+		header('Content-type: application/json');
+		echo json_encode($combobox);
+	}
 }
