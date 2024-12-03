@@ -341,11 +341,14 @@ class dao extends vo {
 	 * @param string $id_combobox
 	 * @return void
 	 */
-	public function comboBox(string $fields, string $where): void
+	public function comboBox(string $fields, string $where, string $combobox_id): void
 	{
 		$rows = $this->select($fields, $where);
 		$combobox = [
-			'combobox' => []
+			'combobox' => [
+				'id' => 'id_combobox',
+				'list' => []
+			]
 		];
 
 		foreach ($rows as $row) {
@@ -353,7 +356,7 @@ class dao extends vo {
 			$val=(array_key_exists(0, $v)) ? $v[0] : '';
 			$text=(array_key_exists(0, $v)) ? $v[1] : '';
 
-			$combobox['combobox'][] = [
+			$combobox['combobox']['list'][] = [
 				'value' => $val,
 				'text' => $text
 			];
