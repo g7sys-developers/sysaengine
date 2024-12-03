@@ -308,7 +308,7 @@ class dao extends vo {
 	 */
 	public function grid(string $fields, string $where='', string $gridId='', string $orderBy='', string $groupBy='') : void
 	{
-		if($this->dbObjectInfo['type'] !== 'r' && $this->useIndex)
+		if(!in_array($this->dbObjectInfo['type'], ['m', 'r', 'v']) && $this->useIndex)
 			throw new \Exception('This class has no implementation to deal with index where for view or materialized view');
 
 		$stmt = $this->selectStatement($fields, $where, $orderBy, $groupBy);
