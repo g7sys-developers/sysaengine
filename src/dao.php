@@ -346,13 +346,13 @@ class dao extends vo {
 		$rows = $this->select($fields, $where);
 		$combobox = [
 			'combobox' => [
-				'id' => 'id_combobox',
+				'id' => $combobox_id,
 				'list' => []
 			]
 		];
 
 		foreach ($rows as $row) {
-			$v=array_values($value);
+			$v=array_values($row);
 			$val=(array_key_exists(0, $v)) ? $v[0] : '';
 			$text=(array_key_exists(0, $v)) ? $v[1] : '';
 
