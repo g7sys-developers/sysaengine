@@ -133,12 +133,13 @@ private $statement;
 
             public function samePage(): string
             {
+                $uuid = sysa::uuid();
                 return '
-                    <script type="application/json" id="json-'. sysa::uuid() .'">'. json_encode($this->arr). '</script>
+                    <script type="application/json" id="json-'. $uuid .'">'. json_encode($this->arr). '</script>
                     <script>
                         document.addEventListener("DOMContentLoaded", () => {
                             jsaa.sendMessage(\'Loading grid 2 using samePage\');
-                            const jsonStr = document.getElementById("json-'. sysa::uuid() .'").textContent;
+                            const jsonStr = document.getElementById("json-'. $uuid .'").textContent;
                             const json = JSON.parse(json);
                             jsaa.gridaa2_bridge(json);
                             jsaa.sendMessage(\'Grid 2 loaded\');
