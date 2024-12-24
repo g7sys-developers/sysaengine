@@ -137,13 +137,13 @@ private $statement;
                 return '
                     <script type="application/json" id="json-'. $uuid .'">'. json_encode($this->arr). '</script>
                     <script>
-                        ' . ((!$modal) ? 'document.addEventListener("DOMContentLoaded", () => {' : '') . '
+                        document.addEventListener("DOMContentLoaded", () => {
                             jsaa.sendMessage(\'Loading grid 2 using samePage\');
                             const jsonStr = document.getElementById("json-'. $uuid .'").textContent;
                             const json = JSON.parse(jsonStr);
                             jsaa.gridaa2_bridge(json);
                             jsaa.sendMessage(\'Grid 2 loaded\');
-                        ' . ((!$modal) ? '});' : '') . '
+                        });
                     </script>
                 ';
             }
