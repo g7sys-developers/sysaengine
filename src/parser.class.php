@@ -143,7 +143,7 @@ private $statement;
                             const json = JSON.parse(jsonStr);
                             jsaa.gridaa2_bridge(json);
                             jsaa.sendMessage(\'Grid 2 loaded\');
-                        ' . ((!$modal) ? '})' : '') . ';
+                        ' . ((!$modal) ? '});' : '') . '
                     </script>
                 ';
             }
