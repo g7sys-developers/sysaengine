@@ -129,7 +129,7 @@ class vo extends postgres{
 			if ($col['setted_in_save'] || ($col['notnull'] && !is_null($col['default'])))
 			{
 				$ret['cols'][] = $colname;
-				$ret['updateCols'] = "$colname = EXCLUDED.$colname, ";
+				$ret['updateCols'] .= "$colname = EXCLUDED.$colname, ";
 				$ret['valuesInsert'][] = $col['value'];
 			}
 		}
