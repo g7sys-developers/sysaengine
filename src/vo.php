@@ -123,7 +123,10 @@ class vo extends postgres{
 	 */
 	public function saveInfo() : array
 	{
-		$ret = [];
+		$ret = [
+			'updateCols' => '',
+		];
+
 		foreach ($this->cols as $colname => $col)
 		{
 			if ($col['setted_in_save'] || ($col['notnull'] && !is_null($col['default'])))
