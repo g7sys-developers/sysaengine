@@ -98,7 +98,7 @@ class vo extends postgres{
 			throw new \Exception('Não foi encontrada a coluna '. $name. ' na classe '. $this->schema. '.'. $this->relname);
 
 		if(!is_null($value) && !is_array($value)){
-			if(in_array($this->cols[$name]['type'], ['int4', 'int2', 'int8']) && !preg_match('/^[0-9]*$/', $value)){
+			if(in_array($this->cols[$name]['type'], ['int4', 'int2', 'int8']) && !preg_match('/^[0-9\-]*$/', $value)){
 				throw new \Exception('A coluna '. $name. ' espera valor int, array ou nulo. O tipo '. gettype($value). ' foi setado');
 			}
 

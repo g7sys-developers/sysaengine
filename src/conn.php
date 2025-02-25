@@ -136,7 +136,6 @@ final class conn{
      * name             get_conn
      * access           public
      * author           Anderson Arruda < andmarruda@gmail.com >
-     * param            string $dbname
      * param            ?array $attrs
      * return           PDO
      */
