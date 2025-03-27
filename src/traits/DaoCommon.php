@@ -4,6 +4,7 @@
     use sysaengine\sql_helper\whereInterpreter;
     use \PDO;
     use \PDOStatement;
+    use sysaengine\log;
 
     trait DaoCommon{
         /**
