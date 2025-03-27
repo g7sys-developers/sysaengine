@@ -4,6 +4,7 @@
     use sysaengine\sql_helper\whereInterpreter;
     use \PDO;
     use \PDOStatement;
+    use sysaengine\log;
 
     trait DaoCommon{
         /**
@@ -102,6 +103,7 @@
             $stmt = $this->conn->prepare($preparedSql['sql']);
             $executed = $stmt->execute($preparedSql['binds']);
 
+            log::logInfo("SQL: " . $preparedSql['sql'] . " BINDS: " . json_encode($preparedSql['binds']));
             if (!$executed) {
                 throw new \Exception("Erro ao executar a query: " . $stmt->errorInfo()[2]);
             }
