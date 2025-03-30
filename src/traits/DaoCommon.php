@@ -99,16 +99,24 @@
          */
         public function selectStatementCommon(string $fields='*', string $where='', string $orderBy='', string $groupBy='') : PDOStatement
         {
-            $preparedSql = $this->prepareSelectCommon(...func_get_args());
-            $stmt = $this->conn->prepare($preparedSql['sql']);
-            $executed = $stmt->execute($preparedSql['binds']);
+            try {
+                $preparedSql = $this->prepareSelectCommon(...func_get_args());
+                $stmt = $this->conn->prepare($preparedSql['sql']);
+                $executed = $stmt->execute($preparedSql['binds']);
+                if (!$executed) {
+                    throw new \Exception("Erro ao executar a query: " . $stmt->errorInfo()[2]);
+                }
 
-            log::logInfo("SQL e Bind: " . json_encode($preparedSql['binds']));
-            if (!$executed) {
-                throw new \Exception("Erro ao executar a query: " . $stmt->errorInfo()[2]);
+                return $stmt;
+            } catch (\Exception $e) {
+                \Sentry\configureScope(function (Sentry\State\Scope $scope): void {
+                    $scope->setExtras([
+                        'contexto_personalizado' => $preparedSql ?? 'Nenhum contexto personalizado',
+                    ]);
+                });
+            
+                \Sentry\captureException($e);
             }
-
-            return $stmt;
         }
 
         /**
