@@ -31,11 +31,13 @@ class vo extends postgres{
 		string $relname,
 		?array $many=NULL,
 		?bool $customIndex=NULL
+		?bool $selectHistory=false
 	) {
 		parent::__construct($schema, $relname);
 
 		if ($many) $this->many($many);
 		if ($customIndex) $this->customIndex();
+		$this->selectHistory = $selectHistory;
   }
 
 	/**
@@ -134,6 +136,7 @@ class vo extends postgres{
 				$ret['cols'][] = $colname;
 				$ret['updateCols'] .= "$colname = EXCLUDED.$colname, ";
 				$ret['valuesInsert'][] = $col['value'];
+				$ret['inputData'][$colname] = $col['value'];
 			}
 		}
 

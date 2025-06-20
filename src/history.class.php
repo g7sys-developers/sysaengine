@@ -14,53 +14,43 @@
 **/
 namespace sysaengine;
 
-class history{
-/**
- * description 		PDOStatement contendo o resultado do SQL
- * var 				\PDOStatement
-*/
-private $conn;
-
-/**
- * description 	    Prepara a class html com os dados que irão ser tratados
- * name 			__construct
- * access			public
- * version			1.0.0
- * author			Anderson Arruda < andmarruda@gmail.com >
- * param 			
- * return 			void
-**/
-	public function __construct(string $dbname)
-	{
-        $this->conn = sysa::cakeConn($dbname);
+class history
+{
+	/**
+	 * Insere o historico de eventos de DB
+	 * 
+	 * @name        save
+	 * @access      public
+	 * @version		1.0.0
+	 * @param 		int $codigo_usuario
+	 * @param 		array $input_data
+	 * @param		array $output_data
+	 * @param 		string $command
+	 * @param 		string $entity
+	 * @param		string $action
+	 * @return 		void
+	 */
+	public static function save(
+		array $input_data,
+		array $output_data,
+		string $command,
+		string $entity,
+		string $action
+	): void {
+		try {
+			$conn = conn::get_conn();
+			$sql = "INSERT INTO history (codigo_usuario, input_data, output_data, command, entity, action) VALUES (?, ?, ?, ?, ?, ?)";
+			$stmt = $conn->prepare($sql);
+			$stmt->execute([
+				sysa::getCodigoUsuario(),
+				json_encode($input_data),
+				json_encode($output_data),
+				$command,
+				$entity,
+				$action
+			]);
+		} catch (\Exception $e) {
+			throw new \Exception("Erro ao salvar histórico: " . $e->getMessage());
+		}
 	}
-    
-/**
- * description      Insere um histórico
- * name             insertHistory
- * access           public
- * version          1.0.0
- * author           Anderson Arruda < andmarruda@gmail.com >
- * param            int $id_history_type
- * param            string $history
- * param            int $codigo_usuario
- * param            int $id_system
- * param            ?string $reference_table
- * param            ?string $reference_column
- * param            ?string $reference_value
- * param            ?array $json_history
- * return           bool
- */
-    public function insertHistory(int $id_history_type, string $history, int $codigo_usuario, int $id_system, ?string $reference_table, ?string $reference_column, ?string $reference_value, ?array $json_history) : bool
-    {
-        $sql = 'INSERT INTO history.history(id_history_type, history, ip, codigo_usuario, user_agent, id_system, reference_table, reference_column, reference_value, json_history) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
-        $b=[$id_history_type, $history, $_SERVER['REMOTE_ADDR'], $codigo_usuario, $_SERVER['HTTP_USER_AGENT'], $id_system, $reference_table, $reference_column, $reference_value, json_encode($json_history)];
-        try{
-            $this->conn->execute($sql, $b);
-            return true;
-        } catch(\Exception $e){
-            return false;
-        }
-    }
 }
-?>

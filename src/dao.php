@@ -49,6 +49,26 @@ class dao extends vo {
 	protected array $lastInsert = [];
 
 	/**
+	 * Salva histórico de select?
+	 * 
+	 * @var bool
+	 */
+	protected bool $selectHistory = false;
+
+	/**
+	 * Desativa salvar histórico de select
+	 * 
+	 * @version 1.0.0
+	 * @author Anderson Arruda < andmarruda@gmail.com >
+	 * @param
+	 * @return void
+	 */
+	public function disableSelectHistory() : void
+	{
+		$this->selectHistory = false;
+	}
+
+	/**
 	 * Set to use where customized
 	 * @version 1.0.0
 	 * @author Anderson Arruda < andmarruda@gmail.com >
@@ -72,12 +92,25 @@ class dao extends vo {
 	 */
 	public function select(...$arguments) : array
 	{
+		$data = [];
 		if($this->dbObjectInfo['type'] === 'FUNC')
 		{
-			return $this->selectFunction(...$arguments);
+			$data = $this->selectFunction(...$arguments);
 		}
 
-		return $this->selectCommon(...$arguments);
+		$data = $this->selectCommon(...$arguments);
+
+		if ($this->selectHistory) {
+			history::save(
+				[...$arguments],
+				$data,
+				$this->lastSqlExecuted,
+				$this->schema . '.' . $this->relname,
+				'VIEW'
+			);
+		}
+
+		return $data;
 	}
 
 	/**
@@ -89,10 +122,22 @@ class dao extends vo {
 	public function selectStatement(...$arguments): \PDOStatement
 	{
 		if ($this->dbObjectInfo['type'] === 'FUNC') {
-			return $this->selectStatementFunc(...$arguments);
+			$stmt = $this->selectStatementFunc(...$arguments);
 		}
 
-		return $this->selectStatementCommon(...$arguments);
+		$stmt = $this->selectStatementCommon(...$arguments);
+
+		if ($this->selectHistory) {
+			history::save(
+				[...$arguments],
+				[],
+				$this->lastSqlExecuted,
+				$this->schema . '.' . $this->relname,
+				'VIEW'
+			);
+		}
+
+		return $stmt;
 	}
 
 	/**
@@ -208,6 +253,20 @@ class dao extends vo {
 			$stmt = $this->conn->prepare($sql);
 			$stmt->execute([...$executedSetFields['binds'], ...$executedWhere['binds']]);
 			$this->useIndex = true;
+
+			history::save(
+				[
+					'settedFields' => $executedSetFields['where'],
+					'settedValues' => $executedSetFields['binds'],
+					'where' => $executedWhere['where'],
+					'whereValues' => $executedWhere['binds']
+				],
+				[],
+				$sql,
+				$this->schema . '.' . $this->relname,
+				'UPDATE'
+			);
+
 			return $stmt;	
 		} catch (\Exception $e) {
 			\Sentry\captureException($e);
@@ -246,6 +305,15 @@ class dao extends vo {
 			$stmt = $this->conn->prepare($sql);
 			$stmt->execute($infos['valuesInsert']);
 			$this->lastInsert = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+			history::save(
+				$infos['inputData'],
+				$this->lastInsert,
+				$sql,
+				$this->schema . '.' . $this->relname,
+				'INSERT'
+			);
+
 			return $stmt;
 		} catch (\Exception $e) {
 			\Sentry\captureException($e);
@@ -286,6 +354,15 @@ class dao extends vo {
 			$stmt = $this->conn->prepare($sql);
 			$stmt->execute($infos['valuesInsert']);
 			$this->lastInsert = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+			history::save(
+				$infos['inputData'],
+				$this->lastInsert,
+				$sql,
+				$this->schema . '.' . $this->relname,
+				'UPSERT'
+			);
+
 			return true;
 		} catch (\Exception $e) {
 			\Sentry\captureException($e);

@@ -38,6 +38,7 @@ final class sysa{
         'smtp_from_name' => NULL,
         'smtp_secure' => NULL,
         'kingsms_token' => NULL,
+        'codigo_usuario' => NULL,
     ];
 
     /**
@@ -169,6 +170,16 @@ final class sysa{
     public static function getKingsmsToken() : string
     {
         return self::$config['kingsms_token'];
+    }
+
+    /**
+     * Get codigo_usuario
+     * 
+     * @return int|null
+     */
+    public static function getCodigoUsuario(): int
+    {
+        return self::$config['codigo_usuario'] ?? 0;
     }
 
     /**
