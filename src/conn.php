@@ -39,7 +39,10 @@ final class conn{
      * description      Padrões de atributos de comportamento do PDO
      * var              array
      */
-    private static $attrs = [PDO::ATTR_ERRMODE => PDO::ERRMODE_WARNING, PDO::ATTR_PERSISTENT => FALSE];
+    private static $attrs = [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_PERSISTENT => FALSE
+    ];
 
     /**
      * description      Se a conexão com o banco de dados está com transação ativa
