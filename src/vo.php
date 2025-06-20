@@ -134,6 +134,7 @@ class vo extends postgres{
 				$ret['cols'][] = $colname;
 				$ret['updateCols'] .= "$colname = EXCLUDED.$colname, ";
 				$ret['valuesInsert'][] = $col['value'];
+				$ret['inputData'][$colname] = $col['value'];
 			}
 		}
 

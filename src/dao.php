@@ -208,6 +208,20 @@ class dao extends vo {
 			$stmt = $this->conn->prepare($sql);
 			$stmt->execute([...$executedSetFields['binds'], ...$executedWhere['binds']]);
 			$this->useIndex = true;
+
+			history::save(
+				[
+					'settedFields' => $executedSetFields['where'],
+					'settedValues' => $executedSetFields['binds'],
+					'where' => $executedWhere['where'],
+					'whereValues' => $executedWhere['binds']
+				],
+				[],
+				$sql,
+				$this->schema . '.' . $this->relname,
+				'UPDATE'
+			);
+
 			return $stmt;	
 		} catch (\Exception $e) {
 			\Sentry\captureException($e);
@@ -246,6 +260,15 @@ class dao extends vo {
 			$stmt = $this->conn->prepare($sql);
 			$stmt->execute($infos['valuesInsert']);
 			$this->lastInsert = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+			history::save(
+				$infos['inputData'],
+				$this->lastInsert,
+				$sql,
+				$this->schema . '.' . $this->relname,
+				'INSERT'
+			);
+
 			return $stmt;
 		} catch (\Exception $e) {
 			\Sentry\captureException($e);
@@ -286,6 +309,15 @@ class dao extends vo {
 			$stmt = $this->conn->prepare($sql);
 			$stmt->execute($infos['valuesInsert']);
 			$this->lastInsert = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+			history::save(
+				$infos['inputData'],
+				$this->lastInsert,
+				$sql,
+				$this->schema . '.' . $this->relname,
+				'UPSERT'
+			);
+
 			return true;
 		} catch (\Exception $e) {
 			\Sentry\captureException($e);
