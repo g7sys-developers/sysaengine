@@ -31,11 +31,13 @@ class vo extends postgres{
 		string $relname,
 		?array $many=NULL,
 		?bool $customIndex=NULL
+		?bool $selectHistory=false
 	) {
 		parent::__construct($schema, $relname);
 
 		if ($many) $this->many($many);
 		if ($customIndex) $this->customIndex();
+		$this->selectHistory = $selectHistory;
   }
 
 	/**

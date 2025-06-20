@@ -18,6 +18,13 @@
         protected string $commonFuncSql = 'SELECT %s(%s)';
 
         /**
+         * Last SQL executed
+         * 
+         * @var string
+         */
+        protected string $lastSqlExecuted = '';
+
+        /**
          * Select statement of the function
          * 
          * @param string $orderBy
@@ -48,6 +55,7 @@
             $stmt = $this->conn->prepare($sql);
             $stmt->execute(array_column($functionInput, 'value'));
 
+            $this->lastSqlExecuted = $sql;
             return $stmt;
         }
 

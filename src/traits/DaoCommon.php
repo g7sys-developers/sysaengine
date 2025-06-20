@@ -8,6 +8,13 @@
 
     trait DaoCommon{
         /**
+         * Last SQL executed
+         * 
+         * @var string
+         */
+        protected string $lastSqlExecuted = '';
+
+        /**
          * Código base para todos os selects
          * 
          * @version 1.0.0
@@ -107,6 +114,7 @@
                     throw new \Exception("Erro ao executar a query: " . $stmt->errorInfo()[2]);
                 }
 
+                $this->lastSqlExecuted = $preparedSql['sql'];
                 return $stmt;
             } catch (\Exception $e) {
                 \Sentry\configureScope(function (Sentry\State\Scope $scope): void {
