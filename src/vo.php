@@ -30,7 +30,7 @@ class vo extends postgres{
 		string $schema,
 		string $relname,
 		?array $many=NULL,
-		?bool $customIndex=NULL
+		?bool $customIndex=NULL,
 		?bool $selectHistory=false
 	) {
 		parent::__construct($schema, $relname);
