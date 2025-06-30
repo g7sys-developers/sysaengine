@@ -39,7 +39,7 @@ class history
 	): void {
 		try {
 			$conn = conn::get_conn();
-			$sql = "INSERT INTO history (codigo_usuario, input_data, output_data, command, entity, action) VALUES (?, ?, ?, ?, ?, ?)";
+			$sql = "INSERT INTO history (codigo_usuario, input_data, output_data, command, entity, action, created_at) VALUES (?, ?, ?, ?, ?, ?, now())";
 			$stmt = $conn->prepare($sql);
 			$stmt->execute([
 				sysa::getCodigoUsuario(),
