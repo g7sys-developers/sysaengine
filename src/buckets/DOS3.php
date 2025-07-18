@@ -107,14 +107,14 @@ class DOS3 implements bucketInterface {
 	 * param        string $key
 	 * @return
 	 */
-	public function getTemporaryUrl(string $key)
+	public function getTemporaryUrl(string $key, string $time = '+15 minutes')
 	{
 		$cmd = $this->s3Client->getCommand('GetObject', [
 			'Bucket' => $this->bucketName,
 			'Key'    => $key,
 		]);
 
-		$request = $this->s3Client->createPresignedRequest($cmd, '+5 minutes');
+		$request = $this->s3Client->createPresignedRequest($cmd, $time);
 
 		return (string) $request->getUri();
 	}
