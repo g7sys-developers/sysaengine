@@ -117,7 +117,7 @@
                 $this->lastSqlExecuted = $preparedSql['sql'];
                 return $stmt;
             } catch (\Exception $e) {
-                \Sentry\configureScope(function (Sentry\State\Scope $scope): void {
+                \Sentry\configureScope(function (\Sentry\State\Scope $scope): void {
                     $scope->setExtras([
                         'contexto_personalizado' => $preparedSql ?? 'Nenhum contexto personalizado',
                     ]);
